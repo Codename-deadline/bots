@@ -3,7 +3,6 @@ from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 
 from telegram.src.markup.schemas.HelpCallbackData import HelpCallbackData
-from telegram.src.services.MessageService import MessageService
 from telegram.src.services.help_service import HelpService
 
 help_router: Router = Router()

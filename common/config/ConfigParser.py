@@ -1,5 +1,3 @@
-import os
-
 import yaml
 from os.path import expandvars
 

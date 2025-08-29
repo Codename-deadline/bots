@@ -1,7 +1,6 @@
 from typing import cast
 
 import grpc
-from aiohttp import request
 from grpc import StatusCode
 from grpc.aio import Channel
 
@@ -188,9 +187,8 @@ class GrpcClient:
         return await self.__call_with_defaults(
             self.integration_service.DeregisterChat,
             integration_pb2.DeregisterChatRequest(
-                messenger_chat_id=chat_id,
-                messenger=self.__messenger
-            )
+                messenger_chat_id=chat_id, messenger=self.__messenger
+            ),
         )
 
     async def update_chat_info(

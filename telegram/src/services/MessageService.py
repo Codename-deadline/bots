@@ -2,11 +2,9 @@ from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from common.i18n import format_with_locale, get_translation
-from common.kafka.enums.TimeRemaining import TimeRemaining
 from common.kafka.schemas.AccountLinkageEvent import AccountLinkageEvent
 from common.kafka.schemas.NotificationEvent import NotificationEvent
 from common.kafka.schemas.OtpEvent import OtpEvent
-from common.logic.enums import Language
 from telegram.src.bot import bot
 from telegram.src.markup.schemas.AccountLinkageCallbackData import (
     AccountLinkageCallbackData,
@@ -41,9 +39,11 @@ class MessageService:
     @staticmethod
     async def deadline_notification_send_message(event: NotificationEvent):
         # TODO: Add a link to the deadline or a markup
-        time_remaining_str: str = get_translation(f"time.{event.timeRemaining.name.lower()}", event.language)
+        time_remaining_str: str = get_translation(
+            f"time.{event.timeRemaining.name.lower()}", event.language
+        )
         if time_remaining_str.startswith("time"):
-            time_remaining_str = get_translation(f"errors.error", event.language)
+            time_remaining_str = get_translation("errors.error", event.language)
         await bot.send_message(
             event.chat_id,
             format_with_locale(
@@ -51,17 +51,13 @@ class MessageService:
                 event.language,
                 title=event.deadline.title,
                 due=f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
-                time_remaining=time_remaining_str
-            )
+                time_remaining=time_remaining_str,
+            ),
         )
 
     @staticmethod
     async def otp_code_send_message(event: OtpEvent):
         await bot.send_message(
             event.account_id,
-            format_with_locale(
-                "auth.otp.text",
-                event.language,
-                code=event.code
-            )
+            format_with_locale("auth.otp.text", event.language, code=event.code),
         )

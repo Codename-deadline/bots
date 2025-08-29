@@ -12,7 +12,7 @@ class GlobalConsumer:
     __topics: tuple[str] = (
         "private.integration.accountlinkage",
         "private.integration.notifications",
-        "private.auth.otp"
+        "private.auth.otp",
     )
     __logger = get_logger_from_filepath(__file__)
     __consumer: AIOKafkaConsumer

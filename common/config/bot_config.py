@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from pydantic import Field, field_validator
-from pydantic_config import SettingsConfig
 from pydantic_core.core_schema import ValidationInfo
 from typing_extensions import override
 
@@ -19,10 +18,6 @@ class BotConfig(ConfigParser):
 
     grpc: GrpcConfig = Field(default_factory=GrpcConfig)
     kafka: KafkaConfig = Field(default_factory=KafkaConfig)
-
-    model_config = SettingsConfig(
-        config_file=CONFIG_PATH,
-    )
 
     @property
     def fallback_language(self):

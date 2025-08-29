@@ -55,7 +55,7 @@ class HelpService:
     async def handle_page_change(self, call: CallbackQuery, data: HelpCallbackData):
         title: str = format_with_locale(f"help.{data.page}.title", data.language)
         current_page_text: str = "" + format_with_locale(
-            f"help.current_page", data.language, title=title
+            "help.current_page", data.language, title=title
         )
         main_text: str = format_with_locale(f"help.{data.page}.text", data.language)
         await call.message.edit_text(

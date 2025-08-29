@@ -26,9 +26,5 @@ def kafka_handlers_setup():
         )
     )
     global_consumer.register_handler(
-        EventHandler(
-            "private.auth.otp",
-            OtpEvent,
-            MessageService.otp_code_send_message
-        )
+        EventHandler("private.auth.otp", OtpEvent, MessageService.otp_code_send_message)
     )

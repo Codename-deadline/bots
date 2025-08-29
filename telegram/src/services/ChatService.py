@@ -1,4 +1,4 @@
-from aiogram.types import Message, ChatMemberAdministrator, ChatMemberOwner
+from aiogram.types import Message
 
 from common.i18n import format_with_locale
 from common.logic.command_parsers import (
@@ -9,7 +9,6 @@ from common.logic.command_parsers import (
 from common.logic.enums import Language
 from common.logic.grpc.GrpcClient import GrpcClient
 from common.logic.utils import get_logger_from_filepath
-from telegram.src.bot import bot
 
 from telegram.src.validation import require
 from telegram.src.validation.conditions import not_dm, has_admin_rights

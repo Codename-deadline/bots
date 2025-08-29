@@ -1,11 +1,7 @@
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery
-from pylint.message import Message
+from aiogram.types import Message
 
-from telegram.src.markup.schemas.AccountLinkageCallbackData import (
-    AccountLinkageCallbackData,
-)
 from telegram.src.services.SubscriptionService import SubscriptionService
 
 subscription_router = Router()

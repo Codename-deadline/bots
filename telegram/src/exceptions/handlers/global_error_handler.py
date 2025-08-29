@@ -13,7 +13,9 @@ from telegram.src.exceptions.AccessDeniedException import AccessDeniedException
 logger = get_logger_from_filepath(__file__)
 
 
-@dp.error(ExceptionTypeFilter(InvalidMessageFormatException), F.update.message.as_("message"))
+@dp.error(
+    ExceptionTypeFilter(InvalidMessageFormatException), F.update.message.as_("message")
+)
 async def invalid_message_format_handler(event: ErrorEvent, message: Message):
     await message.reply(format_with_locale("validation.invalid_cmd_format"))
 

@@ -3,7 +3,7 @@ from functools import singledispatch
 import i18n
 import re
 
-from telegramify_markdown import standardize, markdownify
+from telegramify_markdown import markdownify
 
 from common.logic.constants import TRANSLATIONS_PATH
 from common.logic.enums import Language
@@ -31,7 +31,7 @@ __characters_to_escape: list[str] = [
     "{",
     "}",
     ".",
-    "!"
+    "!",
 ]
 
 # Escape underscores in commands if not already
@@ -43,16 +43,18 @@ def escape_md_v2(s: str) -> str:
     return markdownify(rf"{s}")
     for c in __characters_to_escape:
         s = s.replace(c, f"\\{c}")
-    print(COMMAND_UNDERSCORES_RE.sub(
-        lambda m: re.sub(r"(?<!\\)_", r"\\_", m.group(0)), s
-    ))
+    print(
+        COMMAND_UNDERSCORES_RE.sub(lambda m: re.sub(r"(?<!\\)_", r"\\_", m.group(0)), s)
+    )
     return COMMAND_UNDERSCORES_RE.sub(
         lambda m: re.sub(r"(?<!\\)_", r"\\_", m.group(0)), s
     )
 
+
 def get_translation(key: str, language: Language = config.fallback_language, **kwargs):
     i18n.set("locale", language.name.lower())
     return i18n.t(key, **kwargs)
+
 
 @singledispatch
 def format_with_locale(arg, **kwargs) -> str:
