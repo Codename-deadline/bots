@@ -1,0 +1,13 @@
+common/grpc/generated
+
+**/.venv
+**/.wheels
+**/.env
+**/config.yaml
+**/config.yml
+
+**/.git
+
+**/.vscode
+**/.idea
+**/*cache*
