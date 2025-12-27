@@ -1,7 +1,7 @@
-from common.kafka.enums.TimeRemaining import TimeRemaining
-from common.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
 from datetime import datetime
 
+from common.kafka.enums.TimeRemaining import TimeRemaining
+from common.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
 from common.logic.enums import Language
 
 

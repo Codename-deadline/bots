@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Awaitable, Type
+from typing import Awaitable, Callable, Type
 
 from common.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
 

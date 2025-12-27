@@ -1,5 +1,5 @@
 from aiogram import Bot
-from aiogram.types import Message, ChatMemberAdministrator, ChatMemberOwner
+from aiogram.types import ChatMemberAdministrator, ChatMemberOwner, Message
 
 from telegram.src.exceptions.AccessDeniedException import AccessDeniedException
 

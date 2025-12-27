@@ -1,8 +1,8 @@
 from aiogram.types import (
-    Message,
-    InlineKeyboardButton,
     CallbackQuery,
+    InlineKeyboardButton,
     InlineKeyboardMarkup,
+    Message,
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 

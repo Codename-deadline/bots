@@ -1,12 +1,13 @@
-from aiogram import BaseMiddleware
+from collections.abc import Awaitable, Callable
 from typing import Any
-from collections.abc import Callable, Awaitable
+
+from aiogram import BaseMiddleware
 
 from telegram.src.bot import telegram_grpc_client
 from telegram.src.services.ChatService import ChatService
+from telegram.src.services.help_service import HelpService
 from telegram.src.services.SubscriptionService import SubscriptionService
 from telegram.src.services.VerificationService import VerificationService
-from telegram.src.services.help_service import HelpService
 
 
 class ServiceMiddleware(BaseMiddleware):

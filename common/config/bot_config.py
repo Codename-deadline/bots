@@ -5,10 +5,11 @@ from pydantic_core.core_schema import ValidationInfo
 from typing_extensions import override
 
 from common.logic.constants import CONFIG_PATH
+
+from ..logic.enums import Language
 from .ConfigParser import ConfigParser
 from .schemas.GrpcConfig import GrpcConfig
 from .schemas.KafkaConfig import KafkaConfig
-from ..logic.enums import Language
 
 
 class BotConfig(ConfigParser):

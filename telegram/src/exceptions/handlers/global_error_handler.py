@@ -1,13 +1,12 @@
+from aiogram import F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import ExceptionTypeFilter
-from aiogram import F
 from aiogram.types import ErrorEvent, Message
 
 from common.i18n import format_with_locale
 from common.logic.utils import get_logger_from_filepath
 from telegram.src.bot import dp
 from telegram.src.exceptions import InvalidChatException, InvalidMessageFormatException
-
 from telegram.src.exceptions.AccessDeniedException import AccessDeniedException
 
 logger = get_logger_from_filepath(__file__)

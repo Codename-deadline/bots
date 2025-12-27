@@ -1,8 +1,9 @@
-from collections.abc import Callable, Awaitable
+from collections.abc import Awaitable, Callable
 
-from telegram.src.bot import bot
 from aiogram import Bot
 from aiogram.types import Message
+
+from telegram.src.bot import bot
 
 
 async def require(

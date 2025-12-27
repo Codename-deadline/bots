@@ -2,8 +2,8 @@ from aiogram.types import Message
 
 from common.i18n import format_with_locale
 from common.logic.command_parsers import (
-    parse_command,
     one_int_arg_parser,
+    parse_command,
 )
 from common.logic.grpc.GrpcClient import GrpcClient
 from common.logic.utils import get_logger_from_filepath

@@ -4,12 +4,11 @@ import grpc
 from grpc import StatusCode
 from grpc.aio import Channel
 
-from common.grpc.generated import integration_pb2
-from common.grpc.generated import integration_pb2_grpc
-from common.logic.enums import Messenger, Language
+from common.config.bot_config import config
+from common.grpc.generated import integration_pb2, integration_pb2_grpc
+from common.logic.enums import Language, Messenger
 from common.logic.grpc.GrpcResponse import GrpcResponse
 from common.logic.utils import get_logger_from_filepath
-from common.config.bot_config import config
 
 
 class GrpcClient:
@@ -32,7 +31,7 @@ class GrpcClient:
         self.__credentials = credentials
         self.__timeout: float = timeout
         self.__messenger: integration_pb2.ProtoMessenger = cast(
-            integration_pb2.ProtoMessenger, messenger
+            integration_pb2.ProtoMessenger, cast(int, messenger)
         )
         self.__bot_id: int = bot_id
 

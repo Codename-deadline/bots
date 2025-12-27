@@ -1,18 +1,17 @@
 import asyncio
 import logging
 
+from common.config.bot_config import config
 from common.i18n import configure_i18n
+from telegram.src.bot import bot, dp, telegram_grpc_client
 
 # Initializes error handlers
 from telegram.src.exceptions.handlers import *  # noqa: F403
-
-from common.config.bot_config import config
-from telegram.src.bot import dp, bot, telegram_grpc_client
+from telegram.src.kafka_consumers import global_consumer, kafka_handlers_setup
 from telegram.src.middleware.ServiceMiddleware import ServiceMiddleware
 from telegram.src.routers.chat_router import chat_router
 from telegram.src.routers.help_router import help_router
 from telegram.src.routers.subscription_router import subscription_router
-from telegram.src.kafka_consumers import global_consumer, kafka_handlers_setup
 from telegram.src.routers.util_router import util_router
 from telegram.src.routers.verification_router import verification_router
 

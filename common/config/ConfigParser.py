@@ -1,13 +1,12 @@
-import yaml
 from os.path import expandvars
-
-from typing import Type
 from pathlib import Path
+from typing import Type
+
+import yaml
 from dotenv import load_dotenv
 
 from common.config.schemas.BaseEnumModel import BaseEnumModel
 from common.logic.utils import get_logger_from_filepath
-
 
 logger = get_logger_from_filepath(__file__)
 
@@ -28,7 +27,7 @@ class ConfigParser(BaseEnumModel):
         if config_path.is_file() and config_path.suffix != ".yaml":
             raise FileNotFoundError("Configuration file must have .yaml extension")
 
-        with open(config_path, "r") as config_file:
+        with open(config_path) as config_file:
             data = yaml.safe_load(expandvars(config_file.read()))
         logger.info("Configuration loaded!")
         return config_type().model_validate(data)

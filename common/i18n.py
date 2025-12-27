@@ -1,14 +1,13 @@
+import re
 from functools import singledispatch
 
 import i18n
-import re
-
 from telegramify_markdown import markdownify
 
+from common.config.bot_config import config
 from common.logic.constants import TRANSLATIONS_PATH
 from common.logic.enums import Language
 from common.logic.grpc.GrpcResponse import GrpcResponse
-from common.config.bot_config import config
 
 
 def configure_i18n(locale: Language):
