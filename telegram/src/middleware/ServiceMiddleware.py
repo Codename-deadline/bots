@@ -1,5 +1,6 @@
 from aiogram import BaseMiddleware
-from typing import Callable, Any, Awaitable
+from typing import Any
+from collections.abc import Callable, Awaitable
 
 from telegram.src.bot import telegram_grpc_client
 from telegram.src.services.ChatService import ChatService

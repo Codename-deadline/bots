@@ -50,7 +50,7 @@ async def unsubscribe_from_deadline(
 
 
 @subscription_router.message(Command("unsub_all"))
-async def unsubscribe_from_deadline(
+async def unsubscribe_from_all(
     message: Message, subscription_service: SubscriptionService
 ):
     await subscription_service.unsubscribe_from_all(message)
