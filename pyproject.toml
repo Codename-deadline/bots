@@ -1,10 +1,46 @@
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-
-[tool.pylint."messages control"]
-disable = [
-    "missing-module-docstring",
-    "missing-function-docstring",
-    "missing-class-docstring"
+[project]
+name = "deadlines-bots"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "grpcio==1.82.1",
+    "grpcio-tools==1.82.1",
+    "pydantic==2.13.4",
+    "python-dotenv==1.2.2",
+    "python-i18n==0.3.9",
+    "pyyaml==6.0.3",
+    "telegramify-markdown==1.2.0",
 ]
 
+[project.optional-dependencies]
+telegram = [
+    "aiogram~=3.29.1",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit==4.6.0",
+    "ruff==0.15.20",
+]
+
+[tool.uv]
+package = false
+add-bounds = "major"
+
+[tool.ruff]
+target-version = "py313"
+exclude = [
+    "common/infrastructure/grpc/generated",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "PL",
+    "UP",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
