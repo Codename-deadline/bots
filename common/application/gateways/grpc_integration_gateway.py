@@ -4,15 +4,16 @@ import grpc
 from grpc import StatusCode
 from grpc.aio import Channel
 
+from common.application.enums import Language, Messenger
+from common.application.protocols.integration_gateway import (
+    GrpcResponse,
+    IntegrationGateway,
+)
 from common.config.bot_config import config
-from common.grpc.generated import integration_pb2, integration_pb2_grpc
-from common.logic.enums import Language, Messenger
-from common.logic.grpc.GrpcResponse import GrpcResponse
-from common.logic.utils import get_logger_from_filepath
+from common.infrastructure.grpc.generated import integration_pb2, integration_pb2_grpc
 
 
-class GrpcClient:
-    __logger = get_logger_from_filepath(__file__)
+class GrpcIntegrationGateway(IntegrationGateway):
     __channel: Channel
 
     integration_service: integration_pb2_grpc.IntegrationServiceStub
@@ -52,7 +53,8 @@ class GrpcClient:
     async def close(self):
         await self.__channel.close()
 
-    # rpc_error_callback: Callable[[StatusCode, str], Awaitable[None]] = lambda x, y: None
+    # rpc_error_callback:
+    # Callable[[StatusCode, str], Awaitable[None]] = lambda x, y: None
     async def __call_with_defaults(
         self, method, request, timeout=None, metadata=None
     ) -> GrpcResponse:
@@ -71,15 +73,18 @@ class GrpcClient:
             )
         except grpc.RpcError as rpc_error:
             e = cast(grpc.aio.AioRpcError, rpc_error)
-            self.__logger.error(
-                f"Grpc error occurred. Status code: {e.code()}. Details: {e.details()}"
-            )
+            # self.__logger.error(
+            #     f"Grpc error occurred. Status code: {e.code()}. Details: {e.details()}"
+            # )
 
+            error_message_key: str = (
+                (e.details() or "errors.error")
+                if e.code() != StatusCode.UNAVAILABLE
+                else "errors.server_unavailable"
+            )
             return GrpcResponse(
                 is_error=True,
-                key=e.details()
-                if e.code() != StatusCode.UNAVAILABLE
-                else "errors.server_unavailable",
+                key=error_message_key,
                 language=Language(
                     e.trailing_metadata().get("locale") or config.fallback_language.name
                 ),
@@ -94,10 +99,10 @@ class GrpcClient:
         )
 
     async def __subscribe_to(
-        self, user_id: int, target_id: int, chat_id: int, grpc_callable
+        self, account_id: int, target_id: int, chat_id: int, grpc_callable
     ):
         request = integration_pb2.SubscribeToRequest(
-            issuer_account_id=user_id,
+            issuer_messenger_account_id=account_id,
             target_id=target_id,
             messenger_chat_id=chat_id,
             messenger=self.__messenger,
@@ -105,30 +110,32 @@ class GrpcClient:
         return await self.__call_with_defaults(grpc_callable, request)
 
     async def subscribe_to_organization(
-        self, user_id: int, target_id: int, chat_id: int
+        self, account_id: int, target_id: int, chat_id: int
     ):
         return await self.__subscribe_to(
-            user_id,
+            account_id,
             target_id,
             chat_id,
             self.integration_service.SubscribeToOrganization,
         )
 
-    async def subscribe_to_thread(self, user_id: int, target_id: int, chat_id: int):
+    async def subscribe_to_thread(self, account_id: int, target_id: int, chat_id: int):
         return await self.__subscribe_to(
-            user_id, target_id, chat_id, self.integration_service.SubscribeToThread
+            account_id, target_id, chat_id, self.integration_service.SubscribeToThread
         )
 
-    async def subscribe_to_deadline(self, user_id: int, target_id: int, chat_id: int):
+    async def subscribe_to_deadline(
+        self, account_id: int, target_id: int, chat_id: int
+    ):
         return await self.__subscribe_to(
-            user_id, target_id, chat_id, self.integration_service.SubscribeToDeadline
+            account_id, target_id, chat_id, self.integration_service.SubscribeToDeadline
         )
 
     async def __unsubscribe_from(
-        self, user_id: int, target_id: int, chat_id: int, grpc_callable
+        self, account_id: int, target_id: int, chat_id: int, grpc_callable
     ):
         request = integration_pb2.UnsubscribeFromRequest(
-            issuer_account_id=user_id,
+            issuer_messenger_account_id=account_id,
             target_id=target_id,
             messenger_chat_id=chat_id,
             messenger=self.__messenger,
@@ -136,30 +143,32 @@ class GrpcClient:
         return await self.__call_with_defaults(grpc_callable, request)
 
     async def unsubscribe_from_organization(
-        self, user_id: int, target_id: int, chat_id: int
+        self, account_id: int, target_id: int, chat_id: int
     ):
         return await self.__unsubscribe_from(
-            user_id,
+            account_id,
             target_id,
             chat_id,
             self.integration_service.SubscribeToOrganization,
         )
 
-    async def unsubscribe_from_thread(self, user_id: int, target_id: int, chat_id: int):
+    async def unsubscribe_from_thread(
+        self, account_id: int, target_id: int, chat_id: int
+    ):
         return await self.__unsubscribe_from(
-            user_id, target_id, chat_id, self.integration_service.SubscribeToThread
+            account_id, target_id, chat_id, self.integration_service.SubscribeToThread
         )
 
     async def unsubscribe_from_deadline(
-        self, user_id: int, target_id: int, chat_id: int
+        self, account_id: int, target_id: int, chat_id: int
     ):
         return await self.__unsubscribe_from(
-            user_id, target_id, chat_id, self.integration_service.SubscribeToDeadline
+            account_id, target_id, chat_id, self.integration_service.SubscribeToDeadline
         )
 
-    async def unsubscribe_from_all(self, user_id: int, chat_id: int):
+    async def unsubscribe_from_all(self, account_id: int, chat_id: int):
         request = integration_pb2.UnsubscribeFromAllRequest(
-            issuer_account_id=user_id,
+            issuer_messenger_account_id=account_id,
             messenger_chat_id=chat_id,
             messenger=self.__messenger,
         )
@@ -168,37 +177,56 @@ class GrpcClient:
         )
 
     async def register_chat(
-        self, issuer_id: int, chat_id: int, chat_title: str, language: Language
+        self,
+        account_id: int,
+        chat_id: int,
+        chat_title: str,
+        language: Language,
+        is_admin: bool,
     ):
         request = integration_pb2.RegisterChatRequest(
             bot_id=self.__bot_id,
-            issuer_account_id=issuer_id,
+            issuer_messenger_account_id=account_id,
             messenger=self.__messenger,
             messenger_chat_id=chat_id,
             chat_title=chat_title,
             language=language,
+            issuer_has_messenger_chat_admin_rights=False,
         )
         return await self.__call_with_defaults(
             self.integration_service.RegisterChat, request
         )
 
-    async def deregister_chat(self, chat_id: int):
+    async def deregister_chat(
+        self,
+        account_id: int,
+        chat_id: int,
+        is_admin: bool,
+    ):
         return await self.__call_with_defaults(
             self.integration_service.DeregisterChat,
             integration_pb2.DeregisterChatRequest(
-                messenger_chat_id=chat_id, messenger=self.__messenger
+                messenger_chat_id=chat_id,
+                messenger=self.__messenger,
+                issuer_has_messenger_chat_admin_rights=is_admin,
             ),
         )
 
     async def update_chat_info(
-        self, issuer_id: int, chat_id: int, chat_title: str, language: Language | None
+        self,
+        account_id: int,
+        chat_id: int,
+        is_admin: bool,
+        chat_title: str,
+        language: Language | None,
     ):
         request = integration_pb2.UpdateChatInfoRequest(
-            issuer_account_id=issuer_id,
+            issuer_messenger_account_id=account_id,
             messenger=self.__messenger,
             messenger_chat_id=chat_id,
             language=language,
             title=chat_title,
+            issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(
             self.integration_service.UpdateChatInfo, request

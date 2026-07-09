@@ -28,7 +28,7 @@ package = false
 add-bounds = "major"
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 exclude = [
     "common/infrastructure/grpc/generated",
 ]

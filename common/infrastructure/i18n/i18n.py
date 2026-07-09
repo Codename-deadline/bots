@@ -4,10 +4,10 @@ from functools import singledispatch
 import i18n
 from telegramify_markdown import markdownify
 
+from common.application.constants import TRANSLATIONS_PATH
+from common.application.enums import Language
+from common.application.protocols.integration_gateway import GrpcResponse
 from common.config.bot_config import config
-from common.logic.constants import TRANSLATIONS_PATH
-from common.logic.enums import Language
-from common.logic.grpc.GrpcResponse import GrpcResponse
 
 
 def configure_i18n(locale: Language):

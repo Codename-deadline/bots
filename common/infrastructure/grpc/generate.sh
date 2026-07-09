@@ -13,4 +13,3 @@ python3 -m grpc_tools.protoc -I proto \
 
 # Import patch
 python3 absolute_path_patch.py
-rm proto/*.proto
