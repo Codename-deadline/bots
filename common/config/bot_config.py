@@ -17,7 +17,7 @@ class BotConfig(ConfigParser):
     fallback_language_str: str = Field(default=Language.EN)
 
     grpc: GrpcConfig = Field(default_factory=GrpcConfig)
-    kafka: KafkaConfig
+    kafka: KafkaConfig = Field(default_factory=KafkaConfig)
 
     @property
     def fallback_language(self):
