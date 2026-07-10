@@ -25,7 +25,7 @@ jobs:
         run: uv sync --locked --all-extras --dev
 
       - name: Generate gRPC impl
-        run: cd common/infrastructure/grpc && chmod +x generate.sh && ./generate.sh
+        run: cd common/infrastructure/grpc && uv run sh ./generate.sh
 
       - name: Run formatter
         run: uv run ruff format --check
