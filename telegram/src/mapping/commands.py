@@ -5,7 +5,7 @@ from aiogram.filters.command import CommandObject
 from aiogram.types import Message
 
 from common.contracts.incoming_command import CommandName, IncomingCommand
-from telegram.src.exceptions.InvalidMessageFormatException import (
+from telegram.src.exceptions.invalid_message_format_exception import (
     InvalidMessageFormatException,
 )
 from telegram.src.mapping.messages import to_incoming_message

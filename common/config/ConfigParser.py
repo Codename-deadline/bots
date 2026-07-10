@@ -1,6 +1,7 @@
 import logging
 from os.path import expandvars
 from pathlib import Path
+from typing import Self
 
 import yaml
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ class ConfigParser(BaseEnumModel):
             f.write(yaml.safe_dump(self.model_dump(), sort_keys=True))
 
     @classmethod
-    def from_yaml(cls, config_path: Path):
+    def from_yaml(cls, config_path: Path) -> Self:
         load_dotenv()
         # Create config with default values if not present
         if not config_path.is_file():
@@ -27,6 +28,6 @@ class ConfigParser(BaseEnumModel):
             raise FileNotFoundError("Configuration file must have .yaml extension")
 
         with open(config_path) as config_file:
-            data = yaml.safe_load(expandvars(config_file.read()))
+            data = yaml.safe_load(expandvars(config_file.read())) or {}
         logger.info("Configuration loaded!")
-        return cls().model_validate(data)
+        return cls.model_validate(data)

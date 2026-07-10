@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+from aiogram import Bot
 from aiogram.types import (
     CallbackQuery,
     InaccessibleMessage,
@@ -15,7 +16,6 @@ from common.application.enums import Language
 from common.application.protocols.translator import Translator
 from common.application.translation import TranslationKey
 from common.config.bot_config import config
-from telegram.src.bot import bot
 from telegram.src.markup.schemas.help_callback_data import HelpCallbackData
 
 
@@ -47,7 +47,8 @@ class HelpPage(StrEnum):
 class HelpService:
     pages: tuple[HelpPage, ...] = tuple(HelpPage)
 
-    def __init__(self, translator: Translator):
+    def __init__(self, bot: Bot, translator: Translator):
+        self.bot = bot
         self.translator = translator
 
     @staticmethod
@@ -98,7 +99,7 @@ class HelpService:
         message_text: str = markdownify(f"{header}\n{body}")
 
         if call.message is None or isinstance(call.message, InaccessibleMessage):
-            await bot.send_message(
+            await self.bot.send_message(
                 call.from_user.id,
                 message_text,
                 reply_markup=self._build_markup(data.language, page),

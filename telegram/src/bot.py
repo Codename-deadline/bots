@@ -34,7 +34,7 @@ subscription_service = SubscriptionService(
 verification_service = VerificationService(
     telegram_adapter, integration_gateway, translator
 )
-help_service = HelpService(translator)
+help_service = HelpService(bot, translator)
 
 global_consumer = build_telegram_consumer(
     config.kafka,
