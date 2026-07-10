@@ -1,15 +1,17 @@
 from pathlib import Path
+from typing import override
 
 from pydantic import Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
-from typing_extensions import override
 
-from common.logic.constants import CONFIG_PATH
+from common.application.constants import CONFIG_PATH
+from common.application.enums import Language
 
-from ..logic.enums import Language
 from .ConfigParser import ConfigParser
 from .schemas.GrpcConfig import GrpcConfig
 from .schemas.KafkaConfig import KafkaConfig
+
+TOKEN_PARTS_COUNT: int = 2
 
 
 class BotConfig(ConfigParser):
@@ -27,7 +29,7 @@ class BotConfig(ConfigParser):
     @property
     def id(self) -> int:
         split_token: list[str] = self.token.split(":")
-        assert len(split_token) == 2 and split_token[0].isnumeric()
+        assert len(split_token) == TOKEN_PARTS_COUNT and split_token[0].isnumeric()
         return int(split_token[0])
 
     @field_validator("fallback_language_str")
@@ -37,7 +39,8 @@ class BotConfig(ConfigParser):
 
     @classmethod
     @override
-    def from_yaml(cls, config_path: Path) -> "BotConfig":
+    # TODO:
+    def from_yaml(cls, config_path: Path) -> BotConfig:  # pyright: ignore[reportIncompatibleMethodOverride]
         return super().from_yaml(BotConfig, config_path)
 
 

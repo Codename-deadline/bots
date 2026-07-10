@@ -1,3 +1,4 @@
+import logging
 from typing import cast
 
 import grpc
@@ -6,19 +7,21 @@ from grpc.aio import Channel
 
 from common.application.enums import Language, Messenger
 from common.application.protocols.integration_gateway import (
-    GrpcResponse,
     IntegrationGateway,
+    IntegrationResponse,
+    ScopeType,
 )
 from common.config.bot_config import config
 from common.infrastructure.grpc.generated import integration_pb2, integration_pb2_grpc
 
+logger = logging.getLogger(__name__)
+
 
 class GrpcIntegrationGateway(IntegrationGateway):
-    __channel: Channel
+    _channel: Channel
+    _integration_service: integration_pb2_grpc.IntegrationServiceStub
 
-    integration_service: integration_pb2_grpc.IntegrationServiceStub
-
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         target: str,
         messenger: Messenger,
@@ -27,67 +30,73 @@ class GrpcIntegrationGateway(IntegrationGateway):
         credentials=None,
         timeout: float = 5.0,
     ):
-        self.__target: str = target
-        self.__is_secure: bool = is_secure
-        self.__credentials = credentials
-        self.__timeout: float = timeout
-        self.__messenger: integration_pb2.ProtoMessenger = cast(
-            integration_pb2.ProtoMessenger, cast(int, messenger)
+        self._target: str = target
+        self._is_secure: bool = is_secure
+        self._credentials = credentials
+        self._timeout: float = timeout
+        self._messenger: integration_pb2.ProtoMessenger = getattr(
+            integration_pb2, messenger.name
         )
-        self.__bot_id: int = bot_id
+        self._bot_id: int = bot_id
 
     async def start(self):
         """Open channel and instantiate stubs. Call at app startup."""
-        if self.__is_secure:
-            assert self.__credentials is not None
-            self.__channel = grpc.aio.secure_channel(self.__target, self.__credentials)
+        if self._is_secure:
+            assert self._credentials is not None
+            self._channel = grpc.aio.secure_channel(self._target, self._credentials)
         else:
-            self.__channel = grpc.aio.insecure_channel(self.__target)
+            self._channel = grpc.aio.insecure_channel(self._target)
 
-        self.integration_service = integration_pb2_grpc.IntegrationServiceStub(
-            self.__channel
+        self._integration_service = integration_pb2_grpc.IntegrationServiceStub(
+            self._channel
         )
 
         # TODO: Add health check
 
     async def close(self):
-        await self.__channel.close()
+        await self._channel.close()
 
     # rpc_error_callback:
     # Callable[[StatusCode, str], Awaitable[None]] = lambda x, y: None
     async def __call_with_defaults(
         self, method, request, timeout=None, metadata=None
-    ) -> GrpcResponse:
+    ) -> IntegrationResponse:
         """Generic wrapper that applies default timeout & metadata."""
         if timeout is None:
-            timeout = self.__timeout
+            timeout = self._timeout
         try:
             res = cast(
                 integration_pb2.GeneralResponse,
                 await method(request, timeout=timeout, metadata=metadata),
             )
-            return GrpcResponse(
+            return IntegrationResponse(
                 is_error=False,
                 key=res.key,
-                language=Language(tuple(e.value for e in Language)[res.locale]),
+                language=Language(integration_pb2.Locale.Name(res.locale)),
             )
         except grpc.RpcError as rpc_error:
             e = cast(grpc.aio.AioRpcError, rpc_error)
-            # self.__logger.error(
-            #     f"Grpc error occurred. Status code: {e.code()}. Details: {e.details()}"
-            # )
+            logger.error(
+                "gRPC error occurred. status=%s details=%s",
+                e.code(),
+                e.details(),
+            )
 
             error_message_key: str = (
                 (e.details() or "errors.error")
                 if e.code() != StatusCode.UNAVAILABLE
                 else "errors.server_unavailable"
             )
-            return GrpcResponse(
+            metadata_locale = None
+            for key, value in e.trailing_metadata() or ():
+                if key == "locale":
+                    metadata_locale = value
+                    break
+
+            return IntegrationResponse(
                 is_error=True,
                 key=error_message_key,
-                language=Language(
-                    e.trailing_metadata().get("locale") or config.fallback_language.name
-                ),
+                language=Language(metadata_locale or config.fallback_language.name),
             )
 
     async def link_messenger_account(self, request_id: str, is_accepted: bool):
@@ -95,85 +104,91 @@ class GrpcIntegrationGateway(IntegrationGateway):
             request_id=request_id, is_accepted=is_accepted
         )
         return await self.__call_with_defaults(
-            self.integration_service.LinkMessengerAccount, request
+            self._integration_service.LinkMessengerAccount, request
         )
 
-    async def __subscribe_to(
+    async def _subscribe_to(
         self, account_id: int, target_id: int, chat_id: int, grpc_callable
     ):
         request = integration_pb2.SubscribeToRequest(
             issuer_messenger_account_id=account_id,
             target_id=target_id,
             messenger_chat_id=chat_id,
-            messenger=self.__messenger,
+            messenger=self._messenger,
         )
         return await self.__call_with_defaults(grpc_callable, request)
 
-    async def subscribe_to_organization(
-        self, account_id: int, target_id: int, chat_id: int
+    async def subscribe_to_scope(
+        self, scope_type: ScopeType, account_id: int, scope_id: int, chat_id: int
     ):
-        return await self.__subscribe_to(
-            account_id,
-            target_id,
-            chat_id,
-            self.integration_service.SubscribeToOrganization,
-        )
+        match scope_type:
+            case ScopeType.ORGANIZATION:
+                return await self._subscribe_to(
+                    account_id,
+                    scope_id,
+                    chat_id,
+                    self._integration_service.SubscribeToOrganization,
+                )
+            case ScopeType.THREAD:
+                return await self._subscribe_to(
+                    account_id,
+                    scope_id,
+                    chat_id,
+                    self._integration_service.SubscribeToThread,
+                )
+            case ScopeType.DEADLINE:
+                return await self._subscribe_to(
+                    account_id,
+                    scope_id,
+                    chat_id,
+                    self._integration_service.SubscribeToDeadline,
+                )
 
-    async def subscribe_to_thread(self, account_id: int, target_id: int, chat_id: int):
-        return await self.__subscribe_to(
-            account_id, target_id, chat_id, self.integration_service.SubscribeToThread
-        )
-
-    async def subscribe_to_deadline(
-        self, account_id: int, target_id: int, chat_id: int
-    ):
-        return await self.__subscribe_to(
-            account_id, target_id, chat_id, self.integration_service.SubscribeToDeadline
-        )
-
-    async def __unsubscribe_from(
+    async def _unsubscribe_from(
         self, account_id: int, target_id: int, chat_id: int, grpc_callable
     ):
         request = integration_pb2.UnsubscribeFromRequest(
             issuer_messenger_account_id=account_id,
             target_id=target_id,
             messenger_chat_id=chat_id,
-            messenger=self.__messenger,
+            messenger=self._messenger,
         )
         return await self.__call_with_defaults(grpc_callable, request)
 
-    async def unsubscribe_from_organization(
-        self, account_id: int, target_id: int, chat_id: int
+    async def unsubscribe_from_scope(
+        self, scope_type: ScopeType, account_id: int, scope_id: int, chat_id: int
     ):
-        return await self.__unsubscribe_from(
-            account_id,
-            target_id,
-            chat_id,
-            self.integration_service.SubscribeToOrganization,
-        )
-
-    async def unsubscribe_from_thread(
-        self, account_id: int, target_id: int, chat_id: int
-    ):
-        return await self.__unsubscribe_from(
-            account_id, target_id, chat_id, self.integration_service.SubscribeToThread
-        )
-
-    async def unsubscribe_from_deadline(
-        self, account_id: int, target_id: int, chat_id: int
-    ):
-        return await self.__unsubscribe_from(
-            account_id, target_id, chat_id, self.integration_service.SubscribeToDeadline
-        )
+        match scope_type:
+            case ScopeType.ORGANIZATION:
+                return await self._unsubscribe_from(
+                    account_id,
+                    scope_id,
+                    chat_id,
+                    self._integration_service.UnsubscribeFromOrganization,
+                )
+            case ScopeType.THREAD:
+                return await self._unsubscribe_from(
+                    account_id,
+                    scope_id,
+                    chat_id,
+                    self._integration_service.UnsubscribeFromThread,
+                )
+            case ScopeType.DEADLINE:
+                return await self._unsubscribe_from(
+                    account_id,
+                    scope_id,
+                    chat_id,
+                    self._integration_service.UnsubscribeFromDeadline,
+                )
 
     async def unsubscribe_from_all(self, account_id: int, chat_id: int):
         request = integration_pb2.UnsubscribeFromAllRequest(
             issuer_messenger_account_id=account_id,
             messenger_chat_id=chat_id,
-            messenger=self.__messenger,
+            messenger=self._messenger,
         )
         return await self.__call_with_defaults(
-            self.integration_service.UnsubscribeFromAll, request
+            self._integration_service.UnsubscribeFromAll, request
         )
 
     async def register_chat(
@@ -185,16 +200,16 @@ class GrpcIntegrationGateway(IntegrationGateway):
         is_admin: bool,
     ):
         request = integration_pb2.RegisterChatRequest(
-            bot_id=self.__bot_id,
+            bot_id=self._bot_id,
             issuer_messenger_account_id=account_id,
-            messenger=self.__messenger,
+            messenger=self._messenger,
             messenger_chat_id=chat_id,
             chat_title=chat_title,
-            language=language,
-            issuer_has_messenger_chat_admin_rights=False,
+            language=language.value,
+            issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(
-            self.integration_service.RegisterChat, request
+            self._integration_service.RegisterChat, request
         )
 
     async def deregister_chat(
@@ -204,10 +219,11 @@ class GrpcIntegrationGateway(IntegrationGateway):
         is_admin: bool,
     ):
         return await self.__call_with_defaults(
-            self.integration_service.DeregisterChat,
+            self._integration_service.DeregisterChat,
             integration_pb2.DeregisterChatRequest(
                 messenger_chat_id=chat_id,
-                messenger=self.__messenger,
+                messenger=self._messenger,
+                issuer_messenger_account_id=account_id,
                 issuer_has_messenger_chat_admin_rights=is_admin,
             ),
         )
@@ -222,12 +238,12 @@ class GrpcIntegrationGateway(IntegrationGateway):
     ):
         request = integration_pb2.UpdateChatInfoRequest(
             issuer_messenger_account_id=account_id,
-            messenger=self.__messenger,
+            messenger=self._messenger,
             messenger_chat_id=chat_id,
             language=language,
             title=chat_title,
             issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(
-            self.integration_service.UpdateChatInfo, request
+            self._integration_service.UpdateChatInfo, request
         )

@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from common.kafka.enums.TimeRemaining import TimeRemaining
-from common.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
-from common.logic.enums import Language
+from common.application.enums import Language
+from common.infrastructure.kafka.enums.TimeRemaining import TimeRemaining
+from common.infrastructure.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
 
 
 class DeadlinePayload(BaseKafkaEvent):

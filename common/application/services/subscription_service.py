@@ -1,13 +1,13 @@
 from typing import Literal
 
-from common.application.arg_parsers import ArgParseResult, parse_required_int
+from common.application.arg_parsers import ArgParseError, parse_required_int
 from common.application.protocols.integration_gateway import (
     IntegrationGateway,
     ScopeType,
 )
 from common.application.protocols.messenger_adapter import MessengerAdapter
+from common.application.protocols.translator import Translator
 from common.contracts.incoming_command import CommandName, IncomingCommand
-from common.infrastructure.i18n.i18n import format_with_locale
 
 
 class SubscriptionService:
@@ -31,18 +31,33 @@ class SubscriptionService:
     ) -> CommandName:
         return self.SCOPE_TYPE_TO_COMMAND[prefix][scope_type]
 
-    def __init__(self, messenger: MessengerAdapter, api: IntegrationGateway):
+    def __init__(
+        self,
+        messenger: MessengerAdapter,
+        api: IntegrationGateway,
+        translator: Translator,
+    ):
         self.messenger = messenger
         self.api = api
+        self.translator = translator
+
+    async def _reply_parse_error(
+        self, command: IncomingCommand, error: ArgParseError
+    ) -> None:
+        await self.messenger.reply_to_message(
+            command.message.chat_id,
+            command.message.id,
+            self.translator.translate(error.message_key, command.message.language),
+        )
 
     async def subscribe_to(self, command: IncomingCommand, scope_type: ScopeType):
         command.match_or_raise(
             self._resolve_command_name_from_scope_type("sub", scope_type)
         )
 
-        scope_id: ArgParseResult[int] = parse_required_int(command.args)
-        if not scope_id.ok:
-            # TODO: Error
+        scope_id = parse_required_int(command.args)
+        if scope_id.error is not None:
+            await self._reply_parse_error(command, scope_id.error)
             return
 
         res = await self.api.subscribe_to_scope(
@@ -53,7 +68,9 @@ class SubscriptionService:
         )
 
         await self.messenger.reply_to_message(
-            command.message.chat_id, command.message.id, format_with_locale(res)
+            command.message.chat_id,
+            command.message.id,
+            self.translator.translate_response(res),
         )
 
     async def unsubscribe_from(self, command: IncomingCommand, scope_type: ScopeType):
@@ -61,9 +78,9 @@ class SubscriptionService:
             self._resolve_command_name_from_scope_type("unsub", scope_type)
         )
 
-        scope_id: ArgParseResult[int] = parse_required_int(command.args)
-        if not scope_id.ok:
-            # TODO: Error
+        scope_id = parse_required_int(command.args)
+        if scope_id.error is not None:
+            await self._reply_parse_error(command, scope_id.error)
             return
 
         res = await self.api.unsubscribe_from_scope(
@@ -72,11 +89,10 @@ class SubscriptionService:
             scope_id.as_required_value(),
             command.message.chat_id,
         )
-        # if res.is_error:
-        #     self.__logger.error("[Unsub]: %s", res.key)
-
         await self.messenger.reply_to_message(
-            command.message.chat_id, command.message.id, format_with_locale(res)
+            command.message.chat_id,
+            command.message.id,
+            self.translator.translate_response(res),
         )
 
     async def unsubscribe_from_all(self, command: IncomingCommand):
@@ -87,5 +103,7 @@ class SubscriptionService:
         )
 
         await self.messenger.reply_to_message(
-            command.message.chat_id, command.message.id, format_with_locale(res)
+            command.message.chat_id,
+            command.message.id,
+            self.translator.translate_response(res),
         )

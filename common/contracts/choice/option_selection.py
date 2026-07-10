@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
+from common.contracts.interaction import VerificationInteraction
 
-@dataclass
+
+@dataclass(frozen=True)
 class OptionSelection:
-    request_id: str
+    prompt_id: str
     account_id: int
     chat_id: int
     message_id: int
-    interaction: str
+    interaction: VerificationInteraction
     value: str

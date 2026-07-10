@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from common.logic.enums import Language
+from common.application.enums import Language
 
 
 @dataclass

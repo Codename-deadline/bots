@@ -1,14 +1,13 @@
+import logging
 from os.path import expandvars
 from pathlib import Path
-from typing import Type
 
 import yaml
 from dotenv import load_dotenv
 
 from common.config.schemas.BaseEnumModel import BaseEnumModel
-from common.logic.utils import get_logger_from_filepath
 
-logger = get_logger_from_filepath(__file__)
+logger = logging.getLogger(__name__)
 
 
 class ConfigParser(BaseEnumModel):
@@ -17,7 +16,7 @@ class ConfigParser(BaseEnumModel):
             f.write(yaml.safe_dump(self.model_dump(), sort_keys=True))
 
     @staticmethod
-    def from_yaml(config_type: Type, config_path: Path):
+    def from_yaml(config_type: type, config_path: Path):
         load_dotenv()
         # Create config with default values if not present
         if not config_path.is_file():

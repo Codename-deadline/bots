@@ -9,3 +9,4 @@ generated
 .vscode
 .idea
 *cache*
+.coverage

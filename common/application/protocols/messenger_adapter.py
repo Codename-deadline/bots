@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Protocol
 
 from common.contracts.choice.choice_prompt import ChoicePrompt
-from common.contracts.incoming_message import IncomingMessage
 
 
 class MessengerAdapter(Protocol):

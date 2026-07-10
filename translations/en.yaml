@@ -79,7 +79,8 @@ en:
     organization_not_found: "Organization not found"
     thread_not_found: "Thread not found"
     deadline_not_found: "Deadline not found"
-    linked_account_not_found: "This account is not linked to the `in app` one"
+    linked_account_not_found: "This account is not linked to the `CODENAME-D` one"
+    chat_management_denied: "You do not have permission to use integration commands in this chat"
     server_internal: "Internal server error. Please try again later"
     server_unavailable: "Unable to connect to the server. Please try again later"
     chat_already_registered: "Chat already registered"
@@ -94,13 +95,16 @@ en:
     one_month: "1 month"
   notifications:
     deadline_expiry: "# %title\n\nDue: %due\nLess than **%time_remaining** remaining"
+  prompt:
+    accept: "Yes"
+    reject: "No"
   auth:
     otp:
       text: "%code - account login code\n**Do not disclose it to third parties**"
-    account_linkage:
-      text: "Someone issued an account linkage request. If it was not you decline the request. Otherwise accept to proceed"
-      success: "Account successfully linked"
-      ignored: "Account request was ignored"
+  account_linkage:
+    text: "Someone issued an account linkage request. If it was not you decline the request. Otherwise accept to proceed"
+    success: "Account successfully linked"
+    ignored: "Account linkage request was ignored"
   register_chat:
     success: "Chat registered!"
   deregister_chat:
@@ -130,3 +134,5 @@ en:
     deadline:
       success: "Chat is no longer subscribed to this deadline"
       not_subscribed: "This chat is not subscribed to this deadline"
+    all:
+      success: "All chat subscriptions were removed"

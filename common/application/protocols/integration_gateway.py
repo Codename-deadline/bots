@@ -6,7 +6,7 @@ from common.application.enums import Language
 
 
 @dataclass(frozen=True)
-class GrpcResponse:
+class IntegrationResponse:
     is_error: bool
     key: str
     language: Language
@@ -21,7 +21,7 @@ class ScopeType(StrEnum):
 class IntegrationGateway(Protocol):
     async def link_messenger_account(
         self, request_id: str, is_accepted: bool
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...
 
     async def register_chat(
         self,
@@ -30,13 +30,13 @@ class IntegrationGateway(Protocol):
         chat_title: str,
         language: Language,
         is_admin: bool,
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...
     async def deregister_chat(
         self,
         account_id: int,
         chat_id: int,
         is_admin: bool,
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...
 
     async def update_chat_info(
         self,
@@ -45,14 +45,14 @@ class IntegrationGateway(Protocol):
         is_admin: bool,
         chat_title: str,
         language: Language | None,
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...
 
     async def subscribe_to_scope(
         self, scope_type: ScopeType, account_id: int, scope_id: int, chat_id: int
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...
     async def unsubscribe_from_scope(
         self, scope_type: ScopeType, account_id: int, scope_id: int, chat_id: int
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...
     async def unsubscribe_from_all(
         self, account_id: int, chat_id: int
-    ) -> GrpcResponse: ...
+    ) -> IntegrationResponse: ...

@@ -1,4 +1,4 @@
-from common.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
+from common.infrastructure.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
 
 
 class AccountLinkageEvent(BaseKafkaEvent):
