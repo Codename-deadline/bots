@@ -51,8 +51,6 @@ class GrpcIntegrationGateway(IntegrationGateway):
             self._channel
         )
 
-        # TODO: Add health check
-
     async def close(self):
         await self._channel.close()
 

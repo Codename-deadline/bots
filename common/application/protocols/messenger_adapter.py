@@ -15,5 +15,5 @@ class MessengerAdapter(Protocol):
     ) -> None: ...
 
     async def send_choice_prompt(
-        self, chat_id: int, options: ChoicePrompt, options_per_line: int
+        self, chat_id: int, options: ChoicePrompt, options_per_line: int = 2
     ) -> None: ...

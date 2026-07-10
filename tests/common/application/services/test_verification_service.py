@@ -19,8 +19,9 @@ async def test_ask_for_confirmation_sends_i18n_backed_prompt():
     )
 
     assert len(messenger.prompts) == 1
-    chat_id, prompt = messenger.prompts[0]
+    chat_id, prompt, options_per_line = messenger.prompts[0]
     assert chat_id == 10
+    assert options_per_line == 2
     assert prompt.id == "request-1"
     assert prompt.text_key == TranslationKey.AUTH_ACCOUNT_LINKAGE_TEXT
     assert prompt.interaction == VerificationInteraction.ACCOUNT_LINKING

@@ -15,7 +15,7 @@ from telegram.src.bot import (
 
 # Initializes error handlers
 from telegram.src.exceptions.handlers import *  # noqa: F403
-from telegram.src.middleware.ServiceMiddleware import ServiceMiddleware
+from telegram.src.middleware.service_middleware import ServiceMiddleware
 from telegram.src.routers.chat_router import chat_router
 from telegram.src.routers.help_router import help_router
 from telegram.src.routers.subscription_router import subscription_router

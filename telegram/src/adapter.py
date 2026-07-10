@@ -8,9 +8,7 @@ from telegramify_markdown import markdownify
 from common.application.protocols.messenger_adapter import MessengerAdapter
 from common.application.protocols.translator import Translator
 from common.contracts.choice.choice_prompt import ChoicePrompt
-from telegram.src.markup.schemas.AccountLinkageCallbackData import (
-    AccountLinkageCallbackData,
-)
+from telegram.src.markup.schemas.choice_callback_data import ChoiceCallbackData
 
 
 class TelegramMessengerAdapter(MessengerAdapter):
@@ -42,14 +40,14 @@ class TelegramMessengerAdapter(MessengerAdapter):
         )
 
     async def send_choice_prompt(
-        self, chat_id: int, options: ChoicePrompt, options_per_line: int
+        self, chat_id: int, options: ChoicePrompt, options_per_line: int = 2
     ) -> None:
         builder = InlineKeyboardBuilder()
         builder.row(
             *[
                 InlineKeyboardButton(
                     text=self.translator.translate(choice.label_key),
-                    callback_data=AccountLinkageCallbackData(
+                    callback_data=ChoiceCallbackData(
                         prompt_id=options.id,
                         interaction=options.interaction.value,
                         value=choice.value,

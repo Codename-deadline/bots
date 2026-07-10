@@ -11,6 +11,9 @@ util_router = Router()
 
 @util_router.message(Command("my_id"))
 async def send_user_id(message: Message, translator: Translator):
+    if message.from_user is None:
+        return
+
     await message.reply(
         markdownify(
             translator.translate(

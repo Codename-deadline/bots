@@ -15,18 +15,18 @@ class ConfigParser(BaseEnumModel):
         with open(save_path, "w") as f:
             f.write(yaml.safe_dump(self.model_dump(), sort_keys=True))
 
-    @staticmethod
-    def from_yaml(config_type: type, config_path: Path):
+    @classmethod
+    def from_yaml(cls, config_path: Path):
         load_dotenv()
         # Create config with default values if not present
         if not config_path.is_file():
             logger.info("Configuration file not found. Using default values")
-            config_type().model_save_yaml(config_path)
+            cls().model_save_yaml(config_path)
 
-        if config_path.is_file() and config_path.suffix != ".yaml":
+        if config_path.suffix != ".yaml" or not config_path.is_file():
             raise FileNotFoundError("Configuration file must have .yaml extension")
 
         with open(config_path) as config_file:
             data = yaml.safe_load(expandvars(config_file.read()))
         logger.info("Configuration loaded!")
-        return config_type().model_validate(data)
+        return cls().model_validate(data)

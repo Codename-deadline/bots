@@ -2,6 +2,7 @@ from enum import StrEnum
 
 from aiogram.types import (
     CallbackQuery,
+    InaccessibleMessage,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -14,7 +15,8 @@ from common.application.enums import Language
 from common.application.protocols.translator import Translator
 from common.application.translation import TranslationKey
 from common.config.bot_config import config
-from telegram.src.markup.schemas.HelpCallbackData import HelpCallbackData
+from telegram.src.bot import bot
+from telegram.src.markup.schemas.help_callback_data import HelpCallbackData
 
 
 class HelpPage(StrEnum):
@@ -55,7 +57,7 @@ class HelpService:
             return config.fallback_language
         return parsed_language.as_optional_value() or config.fallback_language
 
-    def __build_markup(
+    def _build_markup(
         self, language: Language, current_page: HelpPage
     ) -> InlineKeyboardMarkup:
         return (  # pyright: ignore[reportReturnType]. This is valid. See .as_markup() impl
@@ -82,18 +84,28 @@ class HelpService:
             text=markdownify(
                 self.translator.translate(TranslationKey.HELP_START_TEXT, language)
             ),
-            reply_markup=self.__build_markup(language, HelpPage.START),
+            reply_markup=self._build_markup(language, HelpPage.START),
         )
 
     async def handle_page_change(self, call: CallbackQuery, data: HelpCallbackData):
         page = HelpPage(data.page)
-        title = self.translator.translate(page.title_key, data.language)
-        current_page_text = self.translator.translate(
+
+        title: str = self.translator.translate(page.title_key, data.language)
+        header: str = self.translator.translate(
             TranslationKey.HELP_CURRENT_PAGE, data.language, title=title
         )
-        main_text = self.translator.translate(page.text_key, data.language)
+        body: str = self.translator.translate(page.text_key, data.language)
+        message_text: str = markdownify(f"{header}\n{body}")
 
-        await call.message.edit_text(
-            markdownify(f"{current_page_text}\n{main_text}"),
-            reply_markup=self.__build_markup(data.language, page),
-        )
+        if call.message is None or isinstance(call.message, InaccessibleMessage):
+            await bot.send_message(
+                call.from_user.id,
+                message_text,
+                reply_markup=self._build_markup(data.language, page),
+            )
+            return
+        else:
+            await call.message.edit_text(
+                message_text,
+                reply_markup=self._build_markup(data.language, page),
+            )

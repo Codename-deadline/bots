@@ -19,8 +19,10 @@ class FakeMessenger:
     async def edit_message(self, chat_id: int, message_id: int, update) -> None:
         self.edits.append((chat_id, message_id, update("original")))
 
-    async def send_choice_prompt(self, chat_id: int, options) -> None:
-        self.prompts.append((chat_id, options))
+    async def send_choice_prompt(
+        self, chat_id: int, options, options_per_line: int = 2
+    ) -> None:
+        self.prompts.append((chat_id, options, options_per_line))
 
 
 class FakeIntegrationGateway:

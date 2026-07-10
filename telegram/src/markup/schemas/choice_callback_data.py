@@ -1,7 +1,7 @@
 from aiogram.filters.callback_data import CallbackData
 
 
-class AccountLinkageCallbackData(CallbackData, prefix="ald"):
+class ChoiceCallbackData(CallbackData, prefix="choice"):
     prompt_id: str
     interaction: str
     value: str

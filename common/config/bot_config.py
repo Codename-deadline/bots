@@ -1,6 +1,3 @@
-from pathlib import Path
-from typing import override
-
 from pydantic import Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
@@ -20,7 +17,7 @@ class BotConfig(ConfigParser):
     fallback_language_str: str = Field(default=Language.EN)
 
     grpc: GrpcConfig = Field(default_factory=GrpcConfig)
-    kafka: KafkaConfig = Field(default_factory=KafkaConfig)
+    kafka: KafkaConfig
 
     @property
     def fallback_language(self):
@@ -36,12 +33,6 @@ class BotConfig(ConfigParser):
     def language_match(cls, v: str, info: ValidationInfo):
         Language(v.upper())
         return v.lower()
-
-    @classmethod
-    @override
-    # TODO:
-    def from_yaml(cls, config_path: Path) -> BotConfig:  # pyright: ignore[reportIncompatibleMethodOverride]
-        return super().from_yaml(BotConfig, config_path)
 
 
 config: BotConfig = BotConfig.from_yaml(CONFIG_PATH)
