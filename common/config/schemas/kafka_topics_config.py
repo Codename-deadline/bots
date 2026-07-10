@@ -1,4 +1,4 @@
-from common.config.schemas.BaseEnumModel import BaseEnumModel
+from common.config.schemas.base_enum_model import BaseEnumModel
 
 
 class KafkaTopicsConfig(BaseEnumModel):

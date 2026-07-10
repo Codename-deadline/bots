@@ -6,7 +6,7 @@ from typing import Self
 import yaml
 from dotenv import load_dotenv
 
-from common.config.schemas.BaseEnumModel import BaseEnumModel
+from common.config.schemas.base_enum_model import BaseEnumModel
 
 logger = logging.getLogger(__name__)
 

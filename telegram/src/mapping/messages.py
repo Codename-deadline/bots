@@ -18,8 +18,8 @@ def _resolve_language(message: Message) -> Language | None:
 async def to_incoming_message(
     message: Message, bot: Bot, resolve_admin: bool = False
 ) -> IncomingMessage:
-    is_private = message.chat.type == "private"
-    has_chat_admin_rights = False
+    is_private: bool = message.chat.type == "private"
+    has_chat_admin_rights: bool = False
     if resolve_admin and not is_private and message.from_user is not None:
         member = await bot.get_chat_member(message.chat.id, message.from_user.id)
         has_chat_admin_rights = isinstance(

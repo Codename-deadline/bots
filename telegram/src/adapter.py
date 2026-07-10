@@ -20,7 +20,7 @@ class TelegramMessengerAdapter(MessengerAdapter):
         return markdownify(text)
 
     async def send_message(self, chat_id: int, text: str) -> None:
-        await self.bot.send_message(chat_id, self._render(text))
+        await self.send_message(chat_id, self._render(text))
 
     async def reply_to_message(self, chat_id: int, message_id: int, text: str) -> None:
         await self.bot.send_message(

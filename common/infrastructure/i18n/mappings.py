@@ -1,5 +1,5 @@
 from common.application.translation import TranslationKey
-from common.infrastructure.kafka.enums.TimeRemaining import TimeRemaining
+from common.infrastructure.kafka.enums.time_remaining import TimeRemaining
 
 TIME_REMAINING_TRANSLATION_KEYS: dict[TimeRemaining, TranslationKey] = {
     TimeRemaining.FIFTEEN_MINUTES: TranslationKey.TIME_FIFTEEN_MINUTES,

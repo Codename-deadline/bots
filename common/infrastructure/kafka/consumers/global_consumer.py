@@ -4,8 +4,8 @@ from typing import Any
 
 from aiokafka import AIOKafkaConsumer
 
-from common.config.schemas.KafkaConfig import KafkaConfig
-from common.infrastructure.kafka.EventHandler import EventHandler
+from common.config.schemas.kafka_config import KafkaConfig
+from common.infrastructure.kafka.event_handler import EventHandler
 
 logger = logging.getLogger(__name__)
 

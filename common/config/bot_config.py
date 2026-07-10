@@ -4,9 +4,9 @@ from pydantic_core.core_schema import ValidationInfo
 from common.application.constants import CONFIG_PATH
 from common.application.enums import Language
 
-from .ConfigParser import ConfigParser
-from .schemas.GrpcConfig import GrpcConfig
-from .schemas.KafkaConfig import KafkaConfig
+from .config_parser import ConfigParser
+from .schemas.grpc_config import GrpcConfig
+from .schemas.kafka_config import KafkaConfig
 
 TOKEN_PARTS_COUNT: int = 2
 

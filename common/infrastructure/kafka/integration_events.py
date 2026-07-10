@@ -1,12 +1,14 @@
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
-from common.config.schemas.KafkaConfig import KafkaConfig
-from common.infrastructure.kafka.consumers.GlobalConsumer import GlobalConsumer
-from common.infrastructure.kafka.EventHandler import EventHandler
-from common.infrastructure.kafka.schemas.AccountLinkageEvent import AccountLinkageEvent
-from common.infrastructure.kafka.schemas.NotificationEvent import NotificationEvent
-from common.infrastructure.kafka.schemas.OtpEvent import OtpEvent
+from common.config.schemas.kafka_config import KafkaConfig
+from common.infrastructure.kafka.consumers.global_consumer import GlobalConsumer
+from common.infrastructure.kafka.event_handler import EventHandler
+from common.infrastructure.kafka.schemas.account_linkage_event import (
+    AccountLinkageEvent,
+)
+from common.infrastructure.kafka.schemas.notification_event import NotificationEvent
+from common.infrastructure.kafka.schemas.otp_event import OtpEvent
 
 
 @dataclass(frozen=True)

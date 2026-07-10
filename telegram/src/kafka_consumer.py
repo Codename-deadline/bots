@@ -2,16 +2,18 @@ from common.application.protocols.messenger_adapter import MessengerAdapter
 from common.application.protocols.translator import Translator
 from common.application.services.verification_service import VerificationService
 from common.application.translation import TranslationKey
-from common.config.schemas.KafkaConfig import KafkaConfig
+from common.config.schemas.kafka_config import KafkaConfig
 from common.contracts.interaction import VerificationInteraction
 from common.infrastructure.i18n.mappings import TIME_REMAINING_TRANSLATION_KEYS
 from common.infrastructure.kafka.integration_events import (
     IntegrationEventHandlers,
     build_integration_consumer,
 )
-from common.infrastructure.kafka.schemas.AccountLinkageEvent import AccountLinkageEvent
-from common.infrastructure.kafka.schemas.NotificationEvent import NotificationEvent
-from common.infrastructure.kafka.schemas.OtpEvent import OtpEvent
+from common.infrastructure.kafka.schemas.account_linkage_event import (
+    AccountLinkageEvent,
+)
+from common.infrastructure.kafka.schemas.notification_event import NotificationEvent
+from common.infrastructure.kafka.schemas.otp_event import OtpEvent
 
 
 def build_telegram_consumer(

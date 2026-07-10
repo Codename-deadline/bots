@@ -1,5 +1,5 @@
 from common.application.enums import Language
-from common.infrastructure.kafka.schemas.BaseKafkaEvent import BaseKafkaEvent
+from common.infrastructure.kafka.schemas.base_kafka_event import BaseKafkaEvent
 
 
 class OtpEvent(BaseKafkaEvent):
