@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any
 
 from aiokafka import AIOKafkaConsumer
 
@@ -15,10 +16,10 @@ class GlobalConsumer:
 
     def __init__(self, kafka_config: KafkaConfig):
         self.config = kafka_config
-        self._event_handlers: dict[str, EventHandler] = {}
+        self._event_handlers: dict[str, EventHandler[Any]] = {}
         self._consume_task = None
 
-    def register_handler(self, event_handler: EventHandler):
+    def register_handler(self, event_handler: EventHandler[Any]):
         self._event_handlers[event_handler.topic] = event_handler
 
     async def start(self):
@@ -33,7 +34,9 @@ class GlobalConsumer:
 
     async def _consume_loop(self):
         async for msg in self._consumer:
-            event_handler: EventHandler | None = self._event_handlers.get(msg.topic)
+            event_handler: EventHandler[Any] | None = self._event_handlers.get(
+                msg.topic
+            )
             if event_handler is None:
                 logger.error("No event mapper for msg in topic: %s", msg.topic)
                 continue

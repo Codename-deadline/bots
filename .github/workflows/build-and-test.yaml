@@ -1,0 +1,42 @@
+name: Build project
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.28"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run formatter
+        run: uv run ruff format --check
+
+      - name: Run linter
+        run: uv run ruff check
+
+      - name: Perform type check
+        run: uv run basedpyright
+
+      - name: Ensure valid Python code
+        run: uv run python -c "import telegram.src.main"
+        env:
+          BOT_TOKEN: "123456:test"
+          GRPC_TARGET: "localhost:9090"
+          KAFKA_BOOTSTRAP_SERVERS: "localhost:9092"
+
+      - name: Run tests
+        run: uv run pytest tests
