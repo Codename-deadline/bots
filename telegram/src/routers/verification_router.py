@@ -1,10 +1,11 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
 
+from common.application.services.verification_service import VerificationService
+from telegram.src.mapping.callbacks import to_option_selection
 from telegram.src.markup.schemas.AccountLinkageCallbackData import (
     AccountLinkageCallbackData,
 )
-from telegram.src.services.VerificationService import VerificationService
 
 verification_router: Router = Router()
 
@@ -15,4 +16,7 @@ async def handle_account_linkage_response(
     callback_data: AccountLinkageCallbackData,
     verification_service: VerificationService,
 ):
-    await verification_service.handle_account_linkage_response(call, callback_data)
+    await verification_service.handle_selection(
+        to_option_selection(call, callback_data)
+    )
+    await call.answer()

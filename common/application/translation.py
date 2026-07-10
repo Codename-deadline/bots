@@ -3,7 +3,10 @@ from enum import StrEnum
 
 class TranslationKey(StrEnum):
     VALIDATION_INVALID_COMMAND_FORMAT = "validation.invalid_cmd_format"
+    VALIDATION_DM_NOT_ALLOWED = "validation.dm_not_allowed"
     VALIDATION_UNSUPPORTED_LANGUAGE = "validation.unsupported_language"
+    VALIDATION_CHAT_NOT_ALLOWED = "validation.chat_not_allowed"
+    VALIDATION_ADMINS_ONLY_CMD = "validation.admins_only_cmd"
 
     ERRORS_ERROR = "errors.error"
     ERRORS_REQUEST_NOT_FOUND = "errors.request_not_found"
@@ -22,6 +25,25 @@ class TranslationKey(StrEnum):
     ERRORS_SERVER_UNAVAILABLE = "errors.server_unavailable"
 
     AUTH_ACCOUNT_LINKAGE_TEXT = "account_linkage.text"
+    AUTH_OTP_TEXT = "auth.otp.text"
+
+    HELP_CURRENT_PAGE = "help.current_page"
+    HELP_START_TITLE = "help.start.title"
+    HELP_START_TEXT = "help.start.text"
+    HELP_SUBSCRIPTION_TITLE = "help.subscription.title"
+    HELP_SUBSCRIPTION_TEXT = "help.subscription.text"
+    HELP_CHAT_TITLE = "help.chat.title"
+    HELP_CHAT_TEXT = "help.chat.text"
+    HELP_VERIFICATION_TITLE = "help.verification.title"
+    HELP_VERIFICATION_TEXT = "help.verification.text"
+
+    TIME_FIFTEEN_MINUTES = "time.fifteen_minutes"
+    TIME_ONE_HOUR = "time.one_hour"
+    TIME_ONE_DAY = "time.one_day"
+    TIME_ONE_WEEK = "time.one_week"
+    TIME_ONE_MONTH = "time.one_month"
+
+    NOTIFICATIONS_DEADLINE_EXPIRY = "notifications.deadline_expiry"
 
     PROMPT_ACCEPT = "prompt.accept"
     PROMPT_REJECT = "prompt.reject"
@@ -33,6 +55,7 @@ class TranslationKey(StrEnum):
     DEREGISTER_CHAT_SUCCESS = "deregister_chat.success"
     DEREGISTER_CHAT_NOT_REGISTERED = "deregister_chat.not_registered"
     CHAT_INFO_UPDATE_SUCCESS = "chat_info_update.success"
+    USER_ID_SUCCESS = "user_id.success"
 
     SUB_ORGANIZATION_SUCCESS = "sub.organization.success"
     SUB_ORGANIZATION_ALREADY_SUBSCRIBED = "sub.organization.already_subscribed"

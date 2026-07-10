@@ -1,2 +1,2 @@
 class AccessDeniedException(Exception):
-    """User does not have enough permissions to use the command or access the resource"""
+    """User does not have enough permissions to access the resource."""

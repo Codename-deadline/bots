@@ -1,22 +1,26 @@
+import logging
+
 from aiogram import F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.types import ErrorEvent, Message
+from telegramify_markdown import markdownify
 
-from common.i18n import format_with_locale
-from common.logic.utils import get_logger_from_filepath
-from telegram.src.bot import dp
+from common.application.translation import TranslationKey
+from telegram.src.bot import dp, translator
 from telegram.src.exceptions import InvalidChatException, InvalidMessageFormatException
 from telegram.src.exceptions.AccessDeniedException import AccessDeniedException
 
-logger = get_logger_from_filepath(__file__)
+logger = logging.getLogger(__name__)
 
 
 @dp.error(
     ExceptionTypeFilter(InvalidMessageFormatException), F.update.message.as_("message")
 )
 async def invalid_message_format_handler(event: ErrorEvent, message: Message):
-    await message.reply(format_with_locale("validation.invalid_cmd_format"))
+    await message.reply(
+        markdownify(translator.translate(TranslationKey.VALIDATION_INVALID_COMMAND_FORMAT))
+    )
 
 
 @dp.error(ExceptionTypeFilter(TelegramBadRequest))
@@ -27,14 +31,18 @@ async def telegram_bad_request_handler(event: ErrorEvent):
 @dp.error(ExceptionTypeFilter(InvalidChatException), F.update.message.as_("message"))
 async def invalid_chat_type_exception_handler(event: ErrorEvent, message: Message):
     await message.reply(
-        format_with_locale(
-            "validation.dm_not_allowed"
-            if event.exception.is_dm
-            else "validation.chat_not_allowed"
+        markdownify(
+            translator.translate(
+                TranslationKey.VALIDATION_DM_NOT_ALLOWED
+                if event.exception.is_dm
+                else TranslationKey.VALIDATION_CHAT_NOT_ALLOWED
+            )
         )
     )
 
 
 @dp.error(ExceptionTypeFilter(AccessDeniedException), F.update.message.as_("message"))
 async def access_denied_exception_handler(event: ErrorEvent, message: Message):
-    await message.reply(format_with_locale("validation.admins_only_cmd"))
+    await message.reply(
+        markdownify(translator.translate(TranslationKey.VALIDATION_ADMINS_ONLY_CMD))
+    )
