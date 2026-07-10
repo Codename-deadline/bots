@@ -1,7 +1,4 @@
-#!/bin/bash
-
-# Avoid relative path and subdirectories which grpc_tools.protoc will produce
-cp proto/**/*.proto proto
+#!/bin/sh
 
 # Generate the python impl
 mkdir -p generated
