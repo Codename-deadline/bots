@@ -94,7 +94,7 @@ en:
     one_week: "1 week"
     one_month: "1 month"
   notifications:
-    deadline_expiry: "# %title\n\nDue: %due\nLess than **%time_remaining** remaining"
+    deadline_expiry: "# %title\n\nOrganization: %organization\nThread: %thread\n\nDue: %due\nLess than **%time_remaining** remaining"
   prompt:
     accept: "Yes"
     reject: "No"

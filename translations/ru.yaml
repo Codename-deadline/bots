@@ -94,7 +94,7 @@ ru:
     one_week: "1 недели"
     one_month: "1 месяца"
   notifications:
-    deadline_expiry: "# %title\n\nКрайний срок: %due\nОсталось менее **%time_remaining**"
+    deadline_expiry: "# %title\n\nОрганизация: %organization\nРаздел: %thread\n\nКрайний срок: %due\nОсталось менее **%time_remaining**"
   prompt:
     accept: "Да"
     reject: "Нет"

@@ -60,6 +60,7 @@ pythonVersion = "3.14"
 typeCheckingMode = "standard"
 include = [
     "common",
+    "console",
     "telegram",
     "tests",
 ]
