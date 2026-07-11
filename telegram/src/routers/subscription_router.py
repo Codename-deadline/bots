@@ -20,7 +20,10 @@ async def subscribe_to_organization(
 ):
     await subscription_service.subscribe_to(
         await to_incoming_command(
-            message, CommandName.SUBSCRIBE_TO_ORGANIZATION, command, bot
+            message,
+            CommandName.SUBSCRIBE_TO_ORGANIZATION,
+            command,
+            bot,
         ),
         ScopeType.ORGANIZATION,
     )
@@ -65,7 +68,10 @@ async def unsubscribe_from_organization(
 ):
     await subscription_service.unsubscribe_from(
         await to_incoming_command(
-            message, CommandName.UNSUBSCRIBE_FROM_ORGANIZATION, command, bot
+            message,
+            CommandName.UNSUBSCRIBE_FROM_ORGANIZATION,
+            command,
+            bot,
         ),
         ScopeType.ORGANIZATION,
     )
@@ -80,7 +86,10 @@ async def unsubscribe_from_thread(
 ):
     await subscription_service.unsubscribe_from(
         await to_incoming_command(
-            message, CommandName.UNSUBSCRIBE_FROM_THREAD, command, bot
+            message,
+            CommandName.UNSUBSCRIBE_FROM_THREAD,
+            command,
+            bot,
         ),
         ScopeType.THREAD,
     )
@@ -95,7 +104,10 @@ async def unsubscribe_from_deadline(
 ):
     await subscription_service.unsubscribe_from(
         await to_incoming_command(
-            message, CommandName.UNSUBSCRIBE_FROM_DEADLINE, command, bot
+            message,
+            CommandName.UNSUBSCRIBE_FROM_DEADLINE,
+            command,
+            bot,
         ),
         ScopeType.DEADLINE,
     )

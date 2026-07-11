@@ -38,7 +38,9 @@ async def test_subscribe_to_scope_calls_api():
         ScopeType.ORGANIZATION,
     )
 
-    assert api.calls == [("subscribe_to_scope", ScopeType.ORGANIZATION, 20, 42, 30)]
+    assert api.calls == [
+        ("subscribe_to_scope", ScopeType.ORGANIZATION, 20, 42, 30, True)
+    ]
 
 
 async def test_subscribe_to_scope_replies_validation_error_without_api_call():
@@ -68,4 +70,4 @@ async def test_unsubscribe_from_all_calls_api_without_args():
 
     await service.unsubscribe_from_all(_command(CommandName.UNSUBSCRIBE_FROM_ALL, ()))
 
-    assert api.calls == [("unsubscribe_from_all", 20, 30)]
+    assert api.calls == [("unsubscribe_from_all", 20, 30, True)]

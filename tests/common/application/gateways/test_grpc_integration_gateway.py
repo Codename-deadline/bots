@@ -18,6 +18,10 @@ class RecordingIntegrationService:
         self.calls.append(("UnsubscribeFromThread", request))
         return self._response()
 
+    async def LinkMessengerAccount(self, request, **kwargs):
+        self.calls.append(("LinkMessengerAccount", request))
+        return self._response()
+
     async def RegisterChat(self, request, **kwargs):
         self.calls.append(("RegisterChat", request))
         return self._response()
@@ -42,7 +46,7 @@ async def test_subscribe_to_scope_maps_to_correct_rpc_and_fields():
     service = RecordingIntegrationService()
     gateway = _gateway(service)
 
-    await gateway.subscribe_to_scope(ScopeType.ORGANIZATION, 10, 20, 30)
+    await gateway.subscribe_to_scope(ScopeType.ORGANIZATION, 10, 20, 30, True)
 
     name, request = service.calls[0]
     assert name == "SubscribeToOrganization"
@@ -50,19 +54,35 @@ async def test_subscribe_to_scope_maps_to_correct_rpc_and_fields():
     assert request.target_id == 20
     assert request.messenger_chat_id == 30
     assert request.messenger == integration_pb2.TELEGRAM
+    assert request.issuer_has_messenger_chat_admin_rights is True
 
 
 async def test_unsubscribe_from_scope_maps_to_unsubscribe_rpc():
     service = RecordingIntegrationService()
     gateway = _gateway(service)
 
-    await gateway.unsubscribe_from_scope(ScopeType.THREAD, 10, 20, 30)
+    await gateway.unsubscribe_from_scope(ScopeType.THREAD, 10, 20, 30, True)
 
     name, request = service.calls[0]
     assert name == "UnsubscribeFromThread"
     assert request.issuer_messenger_account_id == 10
     assert request.target_id == 20
     assert request.messenger_chat_id == 30
+    assert request.issuer_has_messenger_chat_admin_rights is True
+
+
+async def test_link_messenger_account_sends_approving_account_identity():
+    service = RecordingIntegrationService()
+    gateway = _gateway(service)
+
+    await gateway.link_messenger_account("request-1", True, 10)
+
+    name, request = service.calls[0]
+    assert name == "LinkMessengerAccount"
+    assert request.request_id == "request-1"
+    assert request.is_accepted is True
+    assert request.messenger_account_id == 10
+    assert request.messenger == integration_pb2.TELEGRAM
 
 
 async def test_register_chat_sends_admin_flag_and_language():

@@ -24,3 +24,4 @@ async def handle_account_linkage_response(
     help_service: HelpService,
 ):
     await help_service.handle_page_change(call, callback_data)
+    await call.answer()

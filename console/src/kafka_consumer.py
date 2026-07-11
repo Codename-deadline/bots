@@ -17,17 +17,12 @@ from common.infrastructure.kafka.schemas.notification_event import NotificationE
 from common.infrastructure.kafka.schemas.otp_event import OtpEvent
 
 
-def _print_event(topic: str, event) -> None:
-    print(f"[kafka:{topic}] {event.model_dump_json(by_alias=True)}")
-
-
 def build_console_consumer(
     kafka_config: KafkaConfig,
     messenger: MessengerAdapter,
     translator: Translator,
 ):
     async def handle_account_linkage(event: AccountLinkageEvent) -> None:
-        _print_event(kafka_config.topics.account_linkage, event)
         await messenger.send_choice_prompt(
             event.account_id,
             options=ChoicePrompt(
@@ -42,7 +37,6 @@ def build_console_consumer(
         )
 
     async def handle_notification(event: NotificationEvent) -> None:
-        _print_event(kafka_config.topics.notifications, event)
         time_remaining = translator.translate(
             TIME_REMAINING_TRANSLATION_KEYS[event.timeRemaining], event.language
         )
@@ -60,7 +54,6 @@ def build_console_consumer(
         )
 
     async def handle_otp(event: OtpEvent) -> None:
-        _print_event(kafka_config.topics.otp, event)
         await messenger.send_message(
             event.account_id,
             translator.translate(

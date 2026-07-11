@@ -95,29 +95,47 @@ class GrpcIntegrationGateway(IntegrationGateway):
                 is_error=True,
                 key=error_message_key,
                 language=Language(metadata_locale or config.fallback_language.name),
+                is_retryable=e.code()
+                in (StatusCode.UNAVAILABLE, StatusCode.DEADLINE_EXCEEDED),
             )
 
-    async def link_messenger_account(self, request_id: str, is_accepted: bool):
+    async def link_messenger_account(
+        self, request_id: str, is_accepted: bool, account_id: int
+    ):
         request = integration_pb2.LinkMessengerAccountRequest(
-            request_id=request_id, is_accepted=is_accepted
+            request_id=request_id,
+            is_accepted=is_accepted,
+            messenger_account_id=account_id,
+            messenger=self._messenger,
         )
         return await self.__call_with_defaults(
             self._integration_service.LinkMessengerAccount, request
         )
 
     async def _subscribe_to(
-        self, account_id: int, target_id: int, chat_id: int, grpc_callable
+        self,
+        account_id: int,
+        target_id: int,
+        chat_id: int,
+        is_admin: bool,
+        grpc_callable,
     ):
         request = integration_pb2.SubscribeToRequest(
             issuer_messenger_account_id=account_id,
             target_id=target_id,
             messenger_chat_id=chat_id,
             messenger=self._messenger,
+            issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(grpc_callable, request)
 
     async def subscribe_to_scope(
-        self, scope_type: ScopeType, account_id: int, scope_id: int, chat_id: int
+        self,
+        scope_type: ScopeType,
+        account_id: int,
+        scope_id: int,
+        chat_id: int,
+        is_admin: bool,
     ):
         match scope_type:
             case ScopeType.ORGANIZATION:
@@ -125,6 +143,7 @@ class GrpcIntegrationGateway(IntegrationGateway):
                     account_id,
                     scope_id,
                     chat_id,
+                    is_admin,
                     self._integration_service.SubscribeToOrganization,
                 )
             case ScopeType.THREAD:
@@ -132,6 +151,7 @@ class GrpcIntegrationGateway(IntegrationGateway):
                     account_id,
                     scope_id,
                     chat_id,
+                    is_admin,
                     self._integration_service.SubscribeToThread,
                 )
             case ScopeType.DEADLINE:
@@ -139,22 +159,34 @@ class GrpcIntegrationGateway(IntegrationGateway):
                     account_id,
                     scope_id,
                     chat_id,
+                    is_admin,
                     self._integration_service.SubscribeToDeadline,
                 )
 
     async def _unsubscribe_from(
-        self, account_id: int, target_id: int, chat_id: int, grpc_callable
+        self,
+        account_id: int,
+        target_id: int,
+        chat_id: int,
+        is_admin: bool,
+        grpc_callable,
     ):
         request = integration_pb2.UnsubscribeFromRequest(
             issuer_messenger_account_id=account_id,
             target_id=target_id,
             messenger_chat_id=chat_id,
             messenger=self._messenger,
+            issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(grpc_callable, request)
 
     async def unsubscribe_from_scope(
-        self, scope_type: ScopeType, account_id: int, scope_id: int, chat_id: int
+        self,
+        scope_type: ScopeType,
+        account_id: int,
+        scope_id: int,
+        chat_id: int,
+        is_admin: bool,
     ):
         match scope_type:
             case ScopeType.ORGANIZATION:
@@ -162,6 +194,7 @@ class GrpcIntegrationGateway(IntegrationGateway):
                     account_id,
                     scope_id,
                     chat_id,
+                    is_admin,
                     self._integration_service.UnsubscribeFromOrganization,
                 )
             case ScopeType.THREAD:
@@ -169,6 +202,7 @@ class GrpcIntegrationGateway(IntegrationGateway):
                     account_id,
                     scope_id,
                     chat_id,
+                    is_admin,
                     self._integration_service.UnsubscribeFromThread,
                 )
             case ScopeType.DEADLINE:
@@ -176,14 +210,16 @@ class GrpcIntegrationGateway(IntegrationGateway):
                     account_id,
                     scope_id,
                     chat_id,
+                    is_admin,
                     self._integration_service.UnsubscribeFromDeadline,
                 )
 
-    async def unsubscribe_from_all(self, account_id: int, chat_id: int):
+    async def unsubscribe_from_all(self, account_id: int, chat_id: int, is_admin: bool):
         request = integration_pb2.UnsubscribeFromAllRequest(
             issuer_messenger_account_id=account_id,
             messenger_chat_id=chat_id,
             messenger=self._messenger,
+            issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(
             self._integration_service.UnsubscribeFromAll, request

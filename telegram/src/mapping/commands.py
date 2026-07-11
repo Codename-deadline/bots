@@ -25,7 +25,7 @@ async def to_incoming_command(
     command_name: CommandName,
     command: CommandObject | None,
     bot: Bot,
-    resolve_admin: bool = False,
+    resolve_admin: bool = True,
 ) -> IncomingCommand:
     return IncomingCommand(
         message=await to_incoming_message(message, bot, resolve_admin),

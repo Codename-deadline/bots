@@ -1,8 +1,12 @@
 import asyncio
+import contextlib
 import logging
+from dataclasses import dataclass
 from typing import Any
 
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from aiokafka.structs import ConsumerRecord, TopicPartition
+from pydantic import ValidationError
 
 from common.config.schemas.kafka_config import KafkaConfig
 from common.infrastructure.kafka.event_handler import EventHandler
@@ -10,14 +14,23 @@ from common.infrastructure.kafka.event_handler import EventHandler
 logger = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class KafkaMessageKey:
+    topic: str
+    partition: int
+    offset: int
+
+
 class GlobalConsumer:
     _consumer: AIOKafkaConsumer
     _consume_task: asyncio.Task | None
+    _dead_letter_producer: AIOKafkaProducer
 
     def __init__(self, kafka_config: KafkaConfig):
         self.config = kafka_config
         self._event_handlers: dict[str, EventHandler[Any]] = {}
         self._consume_task = None
+        self._retries: dict[KafkaMessageKey, int] = {}
 
     def register_handler(self, event_handler: EventHandler[Any]):
         self._event_handlers[event_handler.topic] = event_handler
@@ -28,8 +41,14 @@ class GlobalConsumer:
         self._consumer = AIOKafkaConsumer(
             *self._event_handlers.keys(),
             bootstrap_servers=self.config.bootstrap_servers,
+            group_id=self.config.consumer_group,
+            enable_auto_commit=False,
         )
         await self._consumer.start()
+        self._dead_letter_producer = AIOKafkaProducer(
+            bootstrap_servers=self.config.bootstrap_servers
+        )
+        await self._dead_letter_producer.start()
         self._consume_task = asyncio.create_task(self._consume_loop())
 
     async def _consume_loop(self):
@@ -44,10 +63,60 @@ class GlobalConsumer:
                 await event_handler.handler(
                     event_handler.event_mapping.model_validate_json(msg.value or "{}")
                 )
-            except Exception as e:
-                logger.exception("Error occurred while processing kafka event: %s", e)
+            except ValidationError as error:
+                await self._move_to_dead_letter(msg, error)
+            except Exception as error:
+                await self._retry_or_dead_letter(msg, error)
+            else:
+                await self._consumer.commit()
+
+    async def _retry_or_dead_letter(
+        self, msg: ConsumerRecord, error: Exception
+    ) -> None:
+        message_key = KafkaMessageKey(msg.topic, msg.partition, msg.offset)
+        attempt: int = self._retries.get(message_key, 0) + 1
+        self._retries[message_key] = attempt
+
+        if attempt > self.config.max_retries:
+            await self._move_to_dead_letter(msg, error)
+            return
+
+        logger.exception(
+            "Error processing Kafka event at %s:%s:%s; retry %s/%s",
+            msg.topic,
+            msg.partition,
+            msg.offset,
+            attempt,
+            self.config.max_retries,
+        )
+        await asyncio.sleep(self.config.retry_delay_seconds)
+        self._consumer.seek(TopicPartition(msg.topic, msg.partition), msg.offset)
+
+    # TODO: Implement dead letter reprocessor
+    async def _move_to_dead_letter(self, msg: ConsumerRecord, error: Exception) -> None:
+        headers = list(msg.headers or [])
+        headers.append(("x-dead-letter-error", type(error).__name__.encode()))
+        headers.append(("x-dead-letter-source-topic", msg.topic.encode()))
+        await self._dead_letter_producer.send_and_wait(
+            self.config.dead_letter_topic,
+            value=msg.value,
+            key=msg.key,
+            headers=headers,
+        )
+        self._retries.pop(KafkaMessageKey(msg.topic, msg.partition, msg.offset), None)
+        logger.error(
+            "Moved Kafka event at %s:%s:%s to %s after processing failure",
+            msg.topic,
+            msg.partition,
+            msg.offset,
+            self.config.dead_letter_topic,
+        )
+        await self._consumer.commit()
 
     async def stop(self):
         if self._consume_task is not None:
             self._consume_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._consume_task
+        await self._dead_letter_producer.stop()
         await self._consumer.stop()

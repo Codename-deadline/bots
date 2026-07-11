@@ -65,6 +65,7 @@ class SubscriptionService:
             command.message.account_id,
             scope_id.as_required_value(),
             command.message.chat_id,
+            command.message.has_chat_admin_rights,
         )
 
         await self.messenger.reply_to_message(
@@ -88,6 +89,7 @@ class SubscriptionService:
             command.message.account_id,
             scope_id.as_required_value(),
             command.message.chat_id,
+            command.message.has_chat_admin_rights,
         )
         await self.messenger.reply_to_message(
             command.message.chat_id,
@@ -99,7 +101,9 @@ class SubscriptionService:
         command.match_or_raise(CommandName.UNSUBSCRIBE_FROM_ALL)
 
         res = await self.api.unsubscribe_from_all(
-            command.message.account_id, command.message.chat_id
+            command.message.account_id,
+            command.message.chat_id,
+            command.message.has_chat_admin_rights,
         )
 
         await self.messenger.reply_to_message(

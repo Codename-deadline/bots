@@ -23,6 +23,7 @@ integration_gateway = GrpcIntegrationGateway(
     config.id,
     config.grpc.is_secure,
     config.grpc.credentials,
+    config.grpc.timeout,
 )
 translator = I18nTranslator(config.fallback_language)
 telegram_adapter = TelegramMessengerAdapter(bot, translator)

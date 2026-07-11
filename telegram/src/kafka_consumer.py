@@ -39,6 +39,8 @@ def build_telegram_consumer(
                 TranslationKey.NOTIFICATIONS_DEADLINE_EXPIRY,
                 event.language,
                 title=event.deadline.title,
+                organization=event.organization.title,
+                thread=event.thread.title,
                 due=f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
                 time_remaining=time_remaining,
             ),

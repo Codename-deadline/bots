@@ -2,7 +2,10 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import Final
 
-from common.application.protocols.integration_gateway import IntegrationGateway
+from common.application.protocols.integration_gateway import (
+    IntegrationGateway,
+    IntegrationResponse,
+)
 from common.application.protocols.messenger_adapter import MessengerAdapter
 from common.application.protocols.translator import Translator
 from common.application.translation import TranslationKey
@@ -60,13 +63,21 @@ class VerificationService:
         if selection.value not in (self.CHOICE_ACCEPT, self.CHOICE_REJECT):
             logger.error("Unknown account-linking choice value: %s", selection.value)
             return
+        is_accepted: bool = selection.value == self.CHOICE_ACCEPT
 
-        is_accepted = selection.value == self.CHOICE_ACCEPT
-
-        result = await self.api.link_messenger_account(
+        result: IntegrationResponse = await self.api.link_messenger_account(
             request_id=selection.prompt_id,
             is_accepted=is_accepted,
+            account_id=selection.account_id,
         )
+
+        if result.is_error and result.is_retryable:
+            await self.messenger.reply_to_message(
+                selection.chat_id,
+                selection.message_id,
+                self.translator.translate_response(result),
+            )
+            return
 
         def edit_message_text(_: str):
             # TODO: Consider format {original}\n\nUPD: {result}

@@ -34,8 +34,12 @@ class FakeIntegrationGateway:
             language=Language.EN,
         )
 
-    async def link_messenger_account(self, request_id: str, is_accepted: bool):
-        self.calls.append(("link_messenger_account", request_id, is_accepted))
+    async def link_messenger_account(
+        self, request_id: str, is_accepted: bool, account_id: int
+    ):
+        self.calls.append(
+            ("link_messenger_account", request_id, is_accepted, account_id)
+        )
         return self.response
 
     async def register_chat(
@@ -59,23 +63,30 @@ class FakeIntegrationGateway:
         return self.response
 
     async def subscribe_to_scope(
-        self, scope_type, account_id: int, scope_id: int, chat_id: int
+        self, scope_type, account_id: int, scope_id: int, chat_id: int, is_admin: bool
     ):
         self.calls.append(
-            ("subscribe_to_scope", scope_type, account_id, scope_id, chat_id)
+            ("subscribe_to_scope", scope_type, account_id, scope_id, chat_id, is_admin)
         )
         return self.response
 
     async def unsubscribe_from_scope(
-        self, scope_type, account_id: int, scope_id: int, chat_id: int
+        self, scope_type, account_id: int, scope_id: int, chat_id: int, is_admin: bool
     ):
         self.calls.append(
-            ("unsubscribe_from_scope", scope_type, account_id, scope_id, chat_id)
+            (
+                "unsubscribe_from_scope",
+                scope_type,
+                account_id,
+                scope_id,
+                chat_id,
+                is_admin,
+            )
         )
         return self.response
 
-    async def unsubscribe_from_all(self, account_id: int, chat_id: int):
-        self.calls.append(("unsubscribe_from_all", account_id, chat_id))
+    async def unsubscribe_from_all(self, account_id: int, chat_id: int, is_admin: bool):
+        self.calls.append(("unsubscribe_from_all", account_id, chat_id, is_admin))
         return self.response
 
 

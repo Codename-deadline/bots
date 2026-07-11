@@ -46,7 +46,7 @@ async def test_handle_account_linking_accepts_selection():
 
     await service.handle_selection(selection)
 
-    assert api.calls == [("link_messenger_account", "request-1", True)]
+    assert api.calls == [("link_messenger_account", "request-1", True, 20)]
     assert messenger.edits == [(30, 40, f"{Language.EN}:register_chat.success")]
 
 
@@ -65,7 +65,32 @@ async def test_handle_account_linking_rejects_selection():
 
     await service.handle_selection(selection)
 
-    assert api.calls == [("link_messenger_account", "request-1", False)]
+    assert api.calls == [("link_messenger_account", "request-1", False, 20)]
+
+
+async def test_handle_account_linking_keeps_prompt_on_retryable_error():
+    messenger = FakeMessenger()
+    api = FakeIntegrationGateway()
+    api.response = api.response.__class__(
+        is_error=True,
+        is_retryable=True,
+        key="errors.server_unavailable",
+        language=Language.EN,
+    )
+    service = VerificationService(messenger, api, FakeTranslator())
+    selection = OptionSelection(
+        prompt_id="request-1",
+        account_id=20,
+        chat_id=30,
+        message_id=40,
+        interaction=VerificationInteraction.ACCOUNT_LINKING,
+        value="accept",
+    )
+
+    await service.handle_selection(selection)
+
+    assert messenger.edits == []
+    assert messenger.replies == [(30, 40, f"{Language.EN}:errors.server_unavailable")]
 
 
 async def test_handle_account_linking_ignores_unknown_choice():
