@@ -1,4 +1,5 @@
 import asyncio
+import ssl
 from contextlib import suppress
 from types import SimpleNamespace
 from typing import cast
@@ -73,6 +74,7 @@ def test_connection_options_creates_mutual_tls_context(tmp_path):
         )
     )
     ssl_context = Mock()
+    ssl_context.verify_flags = ssl.VERIFY_X509_TRUSTED_FIRST
 
     with patch(
         "common.infrastructure.kafka.consumers.global_consumer.ssl.create_default_context",
@@ -81,6 +83,7 @@ def test_connection_options_creates_mutual_tls_context(tmp_path):
         options = consumer._connection_options()
 
     create_default_context.assert_called_once_with(cafile=ca_certificate)
+    assert ssl_context.verify_flags & ssl.VERIFY_X509_PARTIAL_CHAIN
     ssl_context.load_cert_chain.assert_called_once_with(certificate, private_key)
     assert options.security_protocol == "SSL"
     assert options.ssl_context is ssl_context

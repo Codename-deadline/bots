@@ -11,10 +11,7 @@ RUN uv sync --locked --no-dev --extra "${PLATFORM}"
 
 # Generate grpc stubs
 COPY common common
-RUN chmod +x common/infrastructure/grpc/generate.sh && \
-    cd common/infrastructure/grpc && \
-    uv run --no-sync sh generate.sh && \
-    cd /bot
+RUN uv run --no-sync common/infrastructure/grpc/generate.py
 
 # Copy the rest of the source code
 COPY ${PLATFORM} translations run.sh ./

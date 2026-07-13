@@ -80,6 +80,7 @@ class GlobalConsumer:
         context: ssl.SSLContext = ssl.create_default_context(
             cafile=tls_paths.ca_certificate
         )
+        context.verify_flags |= ssl.VERIFY_X509_PARTIAL_CHAIN
         context.load_cert_chain(tls_paths.certificate, tls_paths.private_key)
         return KafkaSecurityConnectionOptions(
             security_protocol="SSL", ssl_context=context

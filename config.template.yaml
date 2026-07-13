@@ -13,7 +13,7 @@ grpc:
 
 kafka:
   bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  consumer_group: ${KAFKA_CONSUMER_GROUP:deadlines-bot}
+  consumer_group: ${KAFKA_CONSUMER_GROUP:}
   dead_letter_topic: ${KAFKA_DEAD_LETTER_TOPIC:private.integration.dead-letter}
   max_retries: ${KAFKA_MAX_RETRIES:5}
   retry_delay_seconds: ${KAFKA_RETRY_DELAY_SECONDS:5.0}
