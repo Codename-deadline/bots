@@ -8,6 +8,7 @@ from aiokafka.errors import IllegalStateError
 from aiokafka.structs import ConsumerRecord, TopicPartition
 
 from common.config.schemas.kafka_config import KafkaConfig
+from common.config.schemas.kafka_topics_config import KafkaTopicsConfig
 from common.config.schemas.tls_config import TlsConfig
 from common.infrastructure.kafka.consumers.global_consumer import (
     GlobalConsumer,
@@ -19,7 +20,21 @@ def _consumer() -> GlobalConsumer:
     return GlobalConsumer(
         KafkaConfig(
             bootstrap_servers="localhost:9092",
+            consumer_group="deadlines-test",
+            dead_letter_topic="dead-letter",
+            max_retries=5,
             retry_delay_seconds=0.001,
+            topics=KafkaTopicsConfig(
+                account_linkage="account-linkage",
+                notifications="notifications",
+                otp="otp",
+            ),
+            tls=TlsConfig(
+                enabled=False,
+                ca_certificate=None,
+                certificate=None,
+                private_key=None,
+            ),
         )
     )
 
@@ -40,6 +55,15 @@ def test_connection_options_creates_mutual_tls_context(tmp_path):
     consumer = GlobalConsumer(
         KafkaConfig(
             bootstrap_servers="localhost:9092",
+            consumer_group="deadlines-test",
+            dead_letter_topic="dead-letter",
+            max_retries=5,
+            retry_delay_seconds=5.0,
+            topics=KafkaTopicsConfig(
+                account_linkage="account-linkage",
+                notifications="notifications",
+                otp="otp",
+            ),
             tls=TlsConfig(
                 enabled=True,
                 ca_certificate=ca_certificate,

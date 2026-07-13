@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from pydantic import Field, model_validator
+from pydantic import model_validator
 
 from common.config.schemas.base_enum_model import BaseEnumModel
 
@@ -14,10 +14,10 @@ class TlsPaths:
 
 
 class TlsConfig(BaseEnumModel):
-    enabled: bool = Field(default=False)
-    ca_certificate: Path | None = Field(default=None)
-    certificate: Path | None = Field(default=None)
-    private_key: Path | None = Field(default=None)
+    enabled: bool
+    ca_certificate: Path | None
+    certificate: Path | None
+    private_key: Path | None
 
     @model_validator(mode="after")
     def validate_credentials(self) -> TlsConfig:

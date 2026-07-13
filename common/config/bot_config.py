@@ -1,4 +1,4 @@
-from pydantic import Field, field_validator
+from pydantic import field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from common.application.constants import CONFIG_PATH
@@ -12,12 +12,12 @@ TOKEN_PARTS_COUNT: int = 2
 
 
 class BotConfig(ConfigParser):
-    dev_mode: bool = Field(default=False)
+    dev_mode: bool
     token: str
-    fallback_language_str: str = Field(default=Language.EN)
+    fallback_language_str: str
 
-    grpc: GrpcConfig = Field(default_factory=GrpcConfig)
-    kafka: KafkaConfig = Field(default_factory=KafkaConfig)
+    grpc: GrpcConfig
+    kafka: KafkaConfig
 
     @property
     def fallback_language(self):

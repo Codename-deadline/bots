@@ -7,6 +7,7 @@ from common.application.services.verification_service import VerificationService
 from common.application.translation import TranslationKey
 from common.config.schemas.kafka_config import KafkaConfig
 from common.config.schemas.kafka_topics_config import KafkaTopicsConfig
+from common.config.schemas.tls_config import TlsConfig
 from common.contracts.choice.choice_prompt import ChoicePrompt
 from common.infrastructure.kafka.enums.time_remaining import TimeRemaining
 from common.infrastructure.kafka.schemas.notification_event import (
@@ -63,10 +64,20 @@ class RecordingTranslator:
 async def test_notification_includes_organization_and_thread_in_translation():
     config = KafkaConfig(
         bootstrap_servers="localhost:9092",
+        consumer_group="deadlines-test",
+        dead_letter_topic="dead-letter",
+        max_retries=5,
+        retry_delay_seconds=5.0,
         topics=KafkaTopicsConfig(
             account_linkage="account-linkage",
             notifications="notifications",
             otp="otp",
+        ),
+        tls=TlsConfig(
+            enabled=False,
+            ca_certificate=None,
+            certificate=None,
+            private_key=None,
         ),
     )
     messenger = RecordingMessenger()

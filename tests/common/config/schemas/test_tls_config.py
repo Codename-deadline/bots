@@ -7,7 +7,12 @@ from common.config.schemas.tls_config import TlsConfig
 
 
 def test_tls_config_allows_disabled_tls_without_credentials():
-    config = TlsConfig()
+    config = TlsConfig(
+        enabled=False,
+        ca_certificate=None,
+        certificate=None,
+        private_key=None,
+    )
 
     assert config.enabled is False
 
@@ -19,7 +24,12 @@ def test_tls_config_requires_all_credentials_when_enabled(tmp_path):
     with pytest.raises(
         ValidationError, match="ca_certificate, certificate, and private_key"
     ):
-        TlsConfig(enabled=True, ca_certificate=ca_certificate)
+        TlsConfig(
+            enabled=True,
+            ca_certificate=ca_certificate,
+            certificate=None,
+            private_key=None,
+        )
 
 
 def test_tls_config_accepts_existing_absolute_credential_files(tmp_path):

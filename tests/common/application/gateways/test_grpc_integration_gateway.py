@@ -10,6 +10,19 @@ from common.infrastructure.grpc.generated import integration_pb2
 BOT_ID: int = 42
 
 
+def _grpc_config(target: str) -> GrpcConfig:
+    return GrpcConfig(
+        target=target,
+        timeout=5.0,
+        tls=TlsConfig(
+            enabled=False,
+            ca_certificate=None,
+            certificate=None,
+            private_key=None,
+        ),
+    )
+
+
 class RecordingIntegrationService:
     def __init__(self):
         self.calls = []
@@ -42,7 +55,7 @@ class RecordingIntegrationService:
 
 def _gateway(service: RecordingIntegrationService) -> GrpcIntegrationGateway:
     gateway = GrpcIntegrationGateway(
-        GrpcConfig(target="localhost:0"),
+        _grpc_config("localhost:0"),
         bot_id=BOT_ID,
         messenger=Messenger.TELEGRAM,
         fallback_language=Language.EN,
@@ -53,7 +66,7 @@ def _gateway(service: RecordingIntegrationService) -> GrpcIntegrationGateway:
 
 async def test_start_opens_insecure_channel_when_tls_is_disabled():
     gateway = GrpcIntegrationGateway(
-        GrpcConfig(target="localhost:9090"),
+        _grpc_config("localhost:9090"),
         bot_id=BOT_ID,
         messenger=Messenger.TELEGRAM,
         fallback_language=Language.EN,
@@ -84,6 +97,7 @@ async def test_start_opens_mutual_tls_channel_when_configured(tmp_path):
     gateway = GrpcIntegrationGateway(
         GrpcConfig(
             target="localhost:9090",
+            timeout=5.0,
             tls=TlsConfig(
                 enabled=True,
                 ca_certificate=ca_certificate,
