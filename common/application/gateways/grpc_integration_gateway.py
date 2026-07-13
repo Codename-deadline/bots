@@ -11,7 +11,7 @@ from common.application.protocols.integration_gateway import (
     IntegrationResponse,
     ScopeType,
 )
-from common.config.bot_config import config
+from common.config.schemas.grpc_config import GrpcConfig
 from common.infrastructure.grpc.generated import integration_pb2, integration_pb2_grpc
 
 logger = logging.getLogger(__name__)
@@ -21,19 +21,17 @@ class GrpcIntegrationGateway(IntegrationGateway):
     _channel: Channel
     _integration_service: integration_pb2_grpc.IntegrationServiceStub
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
-        target: str,
-        messenger: Messenger,
+        config: GrpcConfig,
         bot_id: int,
-        is_secure: bool = False,
-        credentials=None,
-        timeout: float = 5.0,
+        messenger: Messenger,
+        fallback_language: Language,
     ):
-        self._target: str = target
-        self._is_secure: bool = is_secure
-        self._credentials = credentials
-        self._timeout: float = timeout
+        self._target: str = config.target
+        self._tls_paths = config.tls.credentials_paths if config.tls.enabled else None
+        self._timeout: float = config.timeout
+        self._fallback_language = fallback_language
         self._messenger: integration_pb2.ProtoMessenger = getattr(
             integration_pb2, messenger.name
         )
@@ -41,9 +39,13 @@ class GrpcIntegrationGateway(IntegrationGateway):
 
     async def start(self):
         """Open channel and instantiate stubs. Call at app startup."""
-        if self._is_secure:
-            assert self._credentials is not None
-            self._channel = grpc.aio.secure_channel(self._target, self._credentials)
+        if self._tls_paths is not None:
+            credentials = grpc.ssl_channel_credentials(
+                root_certificates=self._tls_paths.ca_certificate.read_bytes(),
+                private_key=self._tls_paths.private_key.read_bytes(),
+                certificate_chain=self._tls_paths.certificate.read_bytes(),
+            )
+            self._channel = grpc.aio.secure_channel(self._target, credentials)
         else:
             self._channel = grpc.aio.insecure_channel(self._target)
 
@@ -94,7 +96,7 @@ class GrpcIntegrationGateway(IntegrationGateway):
             return IntegrationResponse(
                 is_error=True,
                 key=error_message_key,
-                language=Language(metadata_locale or config.fallback_language.name),
+                language=Language(metadata_locale or self._fallback_language.name),
                 is_retryable=e.code()
                 in (StatusCode.UNAVAILABLE, StatusCode.DEADLINE_EXCEEDED),
             )

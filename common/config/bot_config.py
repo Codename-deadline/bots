@@ -13,7 +13,7 @@ TOKEN_PARTS_COUNT: int = 2
 
 class BotConfig(ConfigParser):
     dev_mode: bool = Field(default=False)
-    token: str = Field(default="${BOT_TOKEN}")
+    token: str
     fallback_language_str: str = Field(default=Language.EN)
 
     grpc: GrpcConfig = Field(default_factory=GrpcConfig)

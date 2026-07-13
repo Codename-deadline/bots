@@ -18,12 +18,10 @@ bot: Bot = Bot(
     token=config.token, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2)
 )
 integration_gateway = GrpcIntegrationGateway(
-    config.grpc.target,
-    Messenger.TELEGRAM,
+    config.grpc,
     config.id,
-    config.grpc.is_secure,
-    config.grpc.credentials,
-    config.grpc.timeout,
+    Messenger.TELEGRAM,
+    config.fallback_language,
 )
 translator = I18nTranslator(config.fallback_language)
 telegram_adapter = TelegramMessengerAdapter(bot, translator)

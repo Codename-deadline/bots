@@ -1,8 +1,9 @@
 import asyncio
 import contextlib
 import logging
+import ssl
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import IllegalStateError
@@ -10,6 +11,7 @@ from aiokafka.structs import ConsumerRecord, TopicPartition
 from pydantic import ValidationError
 
 from common.config.schemas.kafka_config import KafkaConfig
+from common.config.schemas.tls_config import TlsPaths
 from common.infrastructure.kafka.event_handler import EventHandler
 
 logger = logging.getLogger(__name__)
@@ -22,14 +24,22 @@ class KafkaMessageKey:
     offset: int
 
 
+@dataclass(frozen=True)
+class KafkaSecurityConnectionOptions:
+    security_protocol: Literal["PLAINTEXT", "SSL"] = "PLAINTEXT"
+    ssl_context: ssl.SSLContext | None = None
+
+
 class GlobalConsumer:
-    _consumer: AIOKafkaConsumer
+    _consumer: AIOKafkaConsumer | None
     _consume_task: asyncio.Task | None
-    _dead_letter_producer: AIOKafkaProducer
+    _dead_letter_producer: AIOKafkaProducer | None
 
     def __init__(self, kafka_config: KafkaConfig):
         self.config = kafka_config
         self._event_handlers: dict[str, EventHandler[Any]] = {}
+        self._consumer = None
+        self._dead_letter_producer = None
         self._consume_task = None
         self._retries: dict[KafkaMessageKey, int] = {}
         self._retry_tasks: dict[TopicPartition, asyncio.Task[None]] = {}
@@ -39,21 +49,44 @@ class GlobalConsumer:
 
     async def start(self):
         assert self._event_handlers, "No Kafka event handlers registered"
+        security_connection_options = self._connection_options()
 
         self._consumer = AIOKafkaConsumer(
             *self._event_handlers.keys(),
             bootstrap_servers=self.config.bootstrap_servers,
             group_id=self.config.consumer_group,
             enable_auto_commit=False,
+            security_protocol=security_connection_options.security_protocol,
+            ssl_context=security_connection_options.ssl_context,
         )
-        await self._consumer.start()
-        self._dead_letter_producer = AIOKafkaProducer(
-            bootstrap_servers=self.config.bootstrap_servers
-        )
-        await self._dead_letter_producer.start()
+        try:
+            await self._consumer.start()
+            self._dead_letter_producer = AIOKafkaProducer(
+                bootstrap_servers=self.config.bootstrap_servers,
+                security_protocol=security_connection_options.security_protocol,
+                ssl_context=security_connection_options.ssl_context,
+            )
+            await self._dead_letter_producer.start()
+        except Exception:
+            await self.stop()
+            raise
         self._consume_task = asyncio.create_task(self._consume_loop())
 
+    def _connection_options(self) -> KafkaSecurityConnectionOptions:
+        if not self.config.tls.enabled:
+            return KafkaSecurityConnectionOptions()
+
+        tls_paths: TlsPaths = self.config.tls.credentials_paths
+        context: ssl.SSLContext = ssl.create_default_context(
+            cafile=tls_paths.ca_certificate
+        )
+        context.load_cert_chain(tls_paths.certificate, tls_paths.private_key)
+        return KafkaSecurityConnectionOptions(
+            security_protocol="SSL", ssl_context=context
+        )
+
     async def _consume_loop(self):
+        assert self._consumer is not None
         async for msg in self._consumer:
             event_handler: EventHandler[Any] | None = self._event_handlers.get(
                 msg.topic
@@ -94,6 +127,7 @@ class GlobalConsumer:
         self._schedule_retry(TopicPartition(msg.topic, msg.partition), msg.offset)
 
     def _schedule_retry(self, partition: TopicPartition, offset: int) -> None:
+        assert self._consumer is not None
         if partition in self._retry_tasks:
             return
         self._consumer.pause(partition)
@@ -104,6 +138,7 @@ class GlobalConsumer:
     async def _resume_partition_after_delay(
         self, partition: TopicPartition, offset: int
     ) -> None:
+        assert self._consumer is not None
         retry_recovery: bool = False
         try:
             await asyncio.sleep(self.config.retry_delay_seconds)
@@ -139,6 +174,7 @@ class GlobalConsumer:
             self._schedule_retry(partition, offset)
 
     def _is_partition_assigned(self, partition: TopicPartition) -> bool:
+        assert self._consumer is not None
         try:
             return partition in self._consumer.assignment()
         except Exception:
@@ -149,6 +185,7 @@ class GlobalConsumer:
 
     # TODO: Implement dead letter reprocessor
     async def _move_to_dead_letter(self, msg: ConsumerRecord, error: Exception) -> None:
+        assert self._dead_letter_producer is not None
         headers = list(msg.headers or [])
         headers.append(("x-dead-letter-error", type(error).__name__.encode()))
         headers.append(("x-dead-letter-source-topic", msg.topic.encode()))
@@ -168,6 +205,7 @@ class GlobalConsumer:
         )
 
     async def _commit(self, msg: ConsumerRecord) -> None:
+        assert self._consumer is not None
         partition = TopicPartition(msg.topic, msg.partition)
         await self._consumer.commit({partition: msg.offset + 1})
         self._retries.pop(KafkaMessageKey(msg.topic, msg.partition, msg.offset), None)
@@ -181,5 +219,9 @@ class GlobalConsumer:
             task.cancel()
         if self._retry_tasks:
             await asyncio.gather(*self._retry_tasks.values(), return_exceptions=True)
-        await self._dead_letter_producer.stop()
-        await self._consumer.stop()
+        if self._dead_letter_producer is not None:
+            await self._dead_letter_producer.stop()
+            self._dead_letter_producer = None
+        if self._consumer is not None:
+            await self._consumer.stop()
+            self._consumer = None

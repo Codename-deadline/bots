@@ -17,11 +17,10 @@ RUN chmod +x common/infrastructure/grpc/generate.sh && \
     cd /bot
 
 # Copy the rest of the source code
-COPY ${PLATFORM} ${PLATFORM}
-COPY translations translations
-
-COPY run.sh .
+COPY ${PLATFORM} translations run.sh ./
 RUN chmod +x run.sh
+
+COPY config.template.yaml config.yaml
 
 
 FROM python:3.14-alpine

@@ -1,6 +1,10 @@
+from unittest.mock import Mock, patch
+
 from common.application.enums import Language, Messenger
 from common.application.gateways.grpc_integration_gateway import GrpcIntegrationGateway
 from common.application.protocols.integration_gateway import ScopeType
+from common.config.schemas.grpc_config import GrpcConfig
+from common.config.schemas.tls_config import TlsConfig
 from common.infrastructure.grpc.generated import integration_pb2
 
 BOT_ID: int = 42
@@ -37,9 +41,84 @@ class RecordingIntegrationService:
 
 
 def _gateway(service: RecordingIntegrationService) -> GrpcIntegrationGateway:
-    gateway = GrpcIntegrationGateway("localhost:0", Messenger.TELEGRAM, bot_id=BOT_ID)
+    gateway = GrpcIntegrationGateway(
+        GrpcConfig(target="localhost:0"),
+        bot_id=BOT_ID,
+        messenger=Messenger.TELEGRAM,
+        fallback_language=Language.EN,
+    )
     gateway._integration_service = service  # pyright: ignore[reportAttributeAccessIssue]
     return gateway
+
+
+async def test_start_opens_insecure_channel_when_tls_is_disabled():
+    gateway = GrpcIntegrationGateway(
+        GrpcConfig(target="localhost:9090"),
+        bot_id=BOT_ID,
+        messenger=Messenger.TELEGRAM,
+        fallback_language=Language.EN,
+    )
+    channel = Mock()
+
+    with (
+        patch(
+            "common.application.gateways.grpc_integration_gateway.grpc.aio.insecure_channel",
+            return_value=channel,
+        ) as insecure_channel,
+        patch(
+            "common.application.gateways.grpc_integration_gateway.integration_pb2_grpc.IntegrationServiceStub"
+        ),
+    ):
+        await gateway.start()
+
+    insecure_channel.assert_called_once_with("localhost:9090")
+
+
+async def test_start_opens_mutual_tls_channel_when_configured(tmp_path):
+    ca_certificate = tmp_path / "ca.crt"
+    certificate = tmp_path / "client.crt"
+    private_key = tmp_path / "client.key"
+    ca_certificate.write_bytes(b"ca")
+    certificate.write_bytes(b"certificate")
+    private_key.write_bytes(b"private key")
+    gateway = GrpcIntegrationGateway(
+        GrpcConfig(
+            target="localhost:9090",
+            tls=TlsConfig(
+                enabled=True,
+                ca_certificate=ca_certificate,
+                certificate=certificate,
+                private_key=private_key,
+            ),
+        ),
+        bot_id=BOT_ID,
+        messenger=Messenger.TELEGRAM,
+        fallback_language=Language.EN,
+    )
+    credentials = Mock()
+    channel = Mock()
+
+    with (
+        patch(
+            "common.application.gateways.grpc_integration_gateway.grpc.ssl_channel_credentials",
+            return_value=credentials,
+        ) as ssl_channel_credentials,
+        patch(
+            "common.application.gateways.grpc_integration_gateway.grpc.aio.secure_channel",
+            return_value=channel,
+        ) as secure_channel,
+        patch(
+            "common.application.gateways.grpc_integration_gateway.integration_pb2_grpc.IntegrationServiceStub"
+        ),
+    ):
+        await gateway.start()
+
+    ssl_channel_credentials.assert_called_once_with(
+        root_certificates=b"ca",
+        private_key=b"private key",
+        certificate_chain=b"certificate",
+    )
+    secure_channel.assert_called_once_with("localhost:9090", credentials)
 
 
 async def test_subscribe_to_scope_maps_to_correct_rpc_and_fields():
