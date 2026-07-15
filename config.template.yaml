@@ -1,0 +1,28 @@
+dev_mode: ${BOT_DEV_MODE:false}
+fallback_language_str: ${FALLBACK_LANGUAGE:en}
+token: ${BOT_TOKEN}
+
+grpc:
+  target: ${GRPC_TARGET:localhost:9090}
+  timeout: ${GRPC_TIMEOUT:5.0}
+  tls:
+    enabled: ${GRPC_TLS_ENABLED:false}
+    ca_certificate: ${GRPC_TLS_CA_CERTIFICATE:/run/secrets/grpc/ca.crt}
+    certificate: ${GRPC_TLS_CERTIFICATE:/run/secrets/grpc/client.crt}
+    private_key: ${GRPC_TLS_PRIVATE_KEY:/run/secrets/grpc/client.key}
+
+kafka:
+  bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  consumer_group: ${KAFKA_CONSUMER_GROUP:}
+  dead_letter_topic: ${KAFKA_DEAD_LETTER_TOPIC:private.integration.dead-letter}
+  max_retries: ${KAFKA_MAX_RETRIES:5}
+  retry_delay_seconds: ${KAFKA_RETRY_DELAY_SECONDS:5.0}
+  topics:
+    account_linkage: ${KAFKA_ACCOUNT_LINKAGE_TOPIC:private.integration.accountlinkage}
+    notifications: ${KAFKA_NOTIFICATIONS_TOPIC:private.integration.notifications}
+    otp: ${KAFKA_OTP_TOPIC:private.auth.otp}
+  tls:
+    enabled: ${KAFKA_TLS_ENABLED:false}
+    ca_certificate: ${KAFKA_TLS_CA_CERTIFICATE:/run/secrets/kafka/ca.crt}
+    certificate: ${KAFKA_TLS_CERTIFICATE:/run/secrets/kafka/client.crt}
+    private_key: ${KAFKA_TLS_PRIVATE_KEY:/run/secrets/kafka/client.key}

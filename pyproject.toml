@@ -1,10 +1,70 @@
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-
-[tool.pylint."messages control"]
-disable = [
-    "missing-module-docstring",
-    "missing-function-docstring",
-    "missing-class-docstring"
+[project]
+name = "deadlines-bots"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "aiokafka>=0.14.0,<0.15.0",
+    "grpcio==1.82.1",
+    "grpcio-tools==1.82.1",
+    "pydantic==2.13.4",
+    "python-dotenv==1.2.2",
+    "python-i18n==0.3.9",
+    "pyyaml==6.0.3",
+    "telegramify-markdown==1.2.0",
 ]
 
+[project.optional-dependencies]
+telegram = [
+    "aiogram~=3.29.1",
+]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.39.9,<2.0.0",
+    "prek>=0.4.8,<0.5.0",
+    "pytest==9.0.2",
+    "pytest-asyncio==1.3.0",
+    "pytest-cov==7.0.0",
+    "ruff==0.15.20",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.uv]
+package = false
+add-bounds = "major"
+
+[tool.ruff]
+target-version = "py314"
+exclude = [
+    "common/infrastructure/grpc/generated",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "PL",
+    "UP",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["PLR2004"]
+
+[tool.basedpyright]
+pythonVersion = "3.14"
+typeCheckingMode = "standard"
+include = [
+    "common",
+    "console",
+    "telegram",
+    "tests",
+]
+exclude = [
+    "common/infrastructure/grpc/generated",
+    ".venv",
+]

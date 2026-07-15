@@ -1,11 +1,12 @@
-common/grpc/generated
+generated
 
-**/.venv
-**/.env
-**/config.yaml
+.venv
+.env
+config.yaml
 
-**/.git
+.git
 
-**/.vscode
-**/.idea
-**/*cache*
+.vscode
+.idea
+*cache*
+.coverage

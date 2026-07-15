@@ -1,51 +1,56 @@
 import asyncio
-import logging
 
-from common.config.bot_config import config
-from common.i18n import configure_i18n
-from telegram.src.bot import bot, dp, telegram_grpc_client
+from common.infrastructure.logging import configure_logging
+from telegram.src.bot import (
+    bot,
+    chat_service,
+    dp,
+    global_consumer,
+    help_service,
+    integration_gateway,
+    subscription_service,
+    translator,
+    verification_service,
+)
 
 # Initializes error handlers
 from telegram.src.exceptions.handlers import *  # noqa: F403
-from telegram.src.kafka_consumers import global_consumer, kafka_handlers_setup
-from telegram.src.middleware.ServiceMiddleware import ServiceMiddleware
+from telegram.src.middleware.service_middleware import ServiceMiddleware
 from telegram.src.routers.chat_router import chat_router
 from telegram.src.routers.help_router import help_router
 from telegram.src.routers.subscription_router import subscription_router
 from telegram.src.routers.util_router import util_router
 from telegram.src.routers.verification_router import verification_router
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
-    datefmt="%H:%M:%S %d-%m-%Y",
-)
-
 
 @dp.startup()
 async def on_startup():
-    kafka_handlers_setup()
-    await telegram_grpc_client.start()
+    await integration_gateway.start()
     await global_consumer.start()
 
 
 @dp.shutdown()
 async def on_shutdown():
-    await telegram_grpc_client.close()
+    await integration_gateway.close()
     await global_consumer.stop()
 
 
 async def main() -> None:
-    configure_i18n(config.fallback_language)
+    configure_logging()
 
-    dp.include_router(subscription_router)
-    dp.include_router(verification_router)
-    dp.include_router(chat_router)
-    dp.include_router(help_router)
-    dp.include_router(util_router)
+    dp.include_routers(
+        subscription_router, verification_router, chat_router, help_router, util_router
+    )
 
-    dp.message.middleware(ServiceMiddleware())
-    dp.callback_query.middleware(ServiceMiddleware())
+    middleware = ServiceMiddleware(
+        chat_service=chat_service,
+        subscription_service=subscription_service,
+        verification_service=verification_service,
+        help_service=help_service,
+        translator=translator,
+    )
+    dp.message.middleware(middleware)
+    dp.callback_query.middleware(middleware)
 
     await dp.start_polling(bot)
 
