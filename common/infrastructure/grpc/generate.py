@@ -24,6 +24,7 @@ class GrpcGenerator:
                 "protoc",
                 f"-I{self._proto_path.parent}",
                 f"--python_out={self._generated_directory}",
+                f"--pyi_out={self._generated_directory}",
                 f"--grpc_python_out={self._generated_directory}",
                 str(self._proto_path),
             ]

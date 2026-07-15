@@ -37,7 +37,7 @@ jobs:
         run: uv run basedpyright
 
       - name: Ensure valid Python code
-        run: uv run python -c "import telegram.src.main"
+        run: cp config.template.yaml config.yaml && uv run python -c "import telegram.src.main"
         env:
           BOT_TOKEN: "123456:test"
           GRPC_TARGET: "localhost:9090"
