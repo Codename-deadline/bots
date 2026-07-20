@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 async def main() -> None:
     configure_logging()
 
-    translator = I18nTranslator(config.fallback_language)
-    messenger = ConsoleMessengerAdapter(translator)
+    translator = I18nTranslator(config.fallback_language, config.app.name)
+    messenger = ConsoleMessengerAdapter(translator, config.app)
     consumer = build_console_consumer(config.kafka, messenger, translator)
 
     await consumer.start()

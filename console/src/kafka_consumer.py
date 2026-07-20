@@ -2,6 +2,7 @@ from common.application.protocols.messenger_adapter import MessengerAdapter
 from common.application.protocols.translator import Translator
 from common.application.translation import TranslationKey
 from common.config.schemas.kafka_config import KafkaConfig
+from common.contracts.app_redirect import AppRedirect
 from common.contracts.choice.choice import Choice
 from common.contracts.choice.choice_prompt import ChoicePrompt
 from common.contracts.interaction import VerificationInteraction
@@ -50,6 +51,12 @@ def build_console_consumer(
                 thread=event.thread.title,
                 due=f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
                 time_remaining=time_remaining,
+            ),
+            AppRedirect(
+                path=f"/deadline?ddlId={event.deadline.id}",
+                display_text=translator.translate(
+                    TranslationKey.NOTIFICATIONS_GO_TO_DEADLINE, event.language
+                ),
             ),
         )
 

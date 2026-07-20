@@ -4,7 +4,7 @@ en:
     start:
       title: "Start"
       text: |
-        I am the client for `CODENAME-D`. Can be used for
+        I am the client for `%app_name`. Can be used for
         1) Account integration
         2) Subscribing to organizations, threads, deadlines
         3) And much more!
@@ -32,7 +32,7 @@ en:
         ## Hierarchy:
         (higher) organization -> thread -> deadline (lower)
 
-        > If the target of your subscription is of type `PRIVATE` you will first need to create a `CODENAME-D` account and link it (see `verification` chapter)
+        > If the target of your subscription is of type `PRIVATE` you will first need to create a `%app_name` account and link it (see `verification` chapter)
 
         ## Commands:
         1) `/sub_org <ORGANIZATION_ID:Number>` -  Subscribes chat to the given organization
@@ -60,7 +60,7 @@ en:
       text: |
         ## Topics:
         1) Account linkage
-           Go to the `CODENAME-D` miniapp <TODO:NAVIGATION> and press `Link account` button (use /my_id command if you do not know your telegram id). You should receive a message from me. Please allow the direct messages, otherwise I will be unable to contact you. Then accept account linkage request.
+           Go to the `%app_name` miniapp <TODO:NAVIGATION> and press `Link account` button (use /my_id command if you do not know your telegram id). You should receive a message from me. Please allow the direct messages, otherwise I will be unable to contact you. Then accept account linkage request.
            *Do not accept the requests which you did not issue. Decline them and reissue the request*
            If you jumped here from _Subscriptions_ you can go back now
         2) Registration
@@ -79,7 +79,7 @@ en:
     organization_not_found: "Organization not found"
     thread_not_found: "Thread not found"
     deadline_not_found: "Deadline not found"
-    linked_account_not_found: "This account is not linked to the `CODENAME-D` one"
+    linked_account_not_found: "This account is not linked to the `%app_name` one"
     chat_management_denied: "You do not have permission to use integration commands in this chat"
     server_internal: "Internal server error. Please try again later"
     server_unavailable: "Unable to connect to the server. Please try again later"
@@ -95,6 +95,7 @@ en:
     one_month: "1 month"
   notifications:
     deadline_expiry: "# %title\n\nOrganization: %organization\nThread: %thread\n\nDue: %due\nLess than **%time_remaining** remaining"
+    go_to_deadline: "Go to deadline"
   prompt:
     accept: "Yes"
     reject: "No"

@@ -5,6 +5,7 @@ from common.application.constants import CONFIG_PATH
 from common.application.enums import Language
 
 from .config_parser import ConfigParser
+from .schemas.app_config import AppConfig
 from .schemas.grpc_config import GrpcConfig
 from .schemas.kafka_config import KafkaConfig
 
@@ -16,6 +17,7 @@ class BotConfig(ConfigParser):
     token: str
     fallback_language_str: str
 
+    app: AppConfig
     grpc: GrpcConfig
     kafka: KafkaConfig
 

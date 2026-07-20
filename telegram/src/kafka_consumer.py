@@ -3,6 +3,7 @@ from common.application.protocols.translator import Translator
 from common.application.services.verification_service import VerificationService
 from common.application.translation import TranslationKey
 from common.config.schemas.kafka_config import KafkaConfig
+from common.contracts.app_redirect import AppRedirect
 from common.contracts.interaction import VerificationInteraction
 from common.infrastructure.i18n.mappings import TIME_REMAINING_TRANSLATION_KEYS
 from common.infrastructure.kafka.integration_events import (
@@ -33,16 +34,23 @@ def build_telegram_consumer(
         time_remaining = translator.translate(
             TIME_REMAINING_TRANSLATION_KEYS[event.timeRemaining], event.language
         )
+        text = translator.translate(
+            TranslationKey.NOTIFICATIONS_DEADLINE_EXPIRY,
+            event.language,
+            title=event.deadline.title,
+            organization=event.organization.title,
+            thread=event.thread.title,
+            due=f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
+            time_remaining=time_remaining,
+        )
         await messenger.send_message(
             event.chat_id,
-            translator.translate(
-                TranslationKey.NOTIFICATIONS_DEADLINE_EXPIRY,
-                event.language,
-                title=event.deadline.title,
-                organization=event.organization.title,
-                thread=event.thread.title,
-                due=f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
-                time_remaining=time_remaining,
+            text,
+            AppRedirect(
+                path=f"/deadline?=ddlId={event.deadline.id}",
+                display_text=translator.translate(
+                    TranslationKey.NOTIFICATIONS_GO_TO_DEADLINE, event.language
+                ),
             ),
         )
 

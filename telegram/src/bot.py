@@ -23,8 +23,8 @@ integration_gateway = GrpcIntegrationGateway(
     Messenger.TELEGRAM,
     config.fallback_language,
 )
-translator = I18nTranslator(config.fallback_language)
-telegram_adapter = TelegramMessengerAdapter(bot, translator)
+translator = I18nTranslator(config.fallback_language, config.app.name)
+telegram_adapter = TelegramMessengerAdapter(bot, translator, config.app)
 
 chat_service = ChatService(telegram_adapter, integration_gateway, translator)
 subscription_service = SubscriptionService(

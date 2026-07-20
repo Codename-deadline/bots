@@ -2,6 +2,10 @@ dev_mode: ${BOT_DEV_MODE:false}
 fallback_language_str: ${FALLBACK_LANGUAGE:en}
 token: ${BOT_TOKEN}
 
+app:
+  name: ${APP_NAME:CODENAME-D}
+  public_url: ${APP_PUBLIC_URL}
+
 grpc:
   target: ${GRPC_TARGET:localhost:9090}
   timeout: ${GRPC_TIMEOUT:5.0}
@@ -13,7 +17,7 @@ grpc:
 
 kafka:
   bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  consumer_group: ${KAFKA_CONSUMER_GROUP:}
+  consumer_group: ${KAFKA_CONSUMER_GROUP}
   dead_letter_topic: ${KAFKA_DEAD_LETTER_TOPIC:private.integration.dead-letter}
   max_retries: ${KAFKA_MAX_RETRIES:5}
   retry_delay_seconds: ${KAFKA_RETRY_DELAY_SECONDS:5.0}

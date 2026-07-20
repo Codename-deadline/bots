@@ -8,6 +8,7 @@ from common.application.translation import TranslationKey
 from common.config.schemas.kafka_config import KafkaConfig
 from common.config.schemas.kafka_topics_config import KafkaTopicsConfig
 from common.config.schemas.tls_config import TlsConfig
+from common.contracts.app_redirect import AppRedirect
 from common.contracts.choice.choice_prompt import ChoicePrompt
 from common.infrastructure.kafka.enums.time_remaining import TimeRemaining
 from common.infrastructure.kafka.schemas.notification_event import (
@@ -27,7 +28,9 @@ class RecordingMessenger:
     def __init__(self):
         self.messages = []
 
-    async def send_message(self, chat_id: int, text: str) -> None:
+    async def send_message(
+        self, chat_id: int, text: str, app_redirect: AppRedirect | None = None
+    ) -> None:
         self.messages.append((chat_id, text))
 
     async def reply_to_message(self, chat_id: int, message_id: int, text: str) -> None:

@@ -1,6 +1,7 @@
 from common.application.enums import Language
 from common.application.protocols.integration_gateway import IntegrationResponse
 from common.application.translation import TranslationKey
+from common.contracts.app_redirect import AppRedirect
 
 
 class FakeMessenger:
@@ -10,7 +11,9 @@ class FakeMessenger:
         self.edits = []
         self.prompts = []
 
-    async def send_message(self, chat_id: int, text: str) -> None:
+    async def send_message(
+        self, chat_id: int, text: str, app_redirect: AppRedirect | None = None
+    ) -> None:
         self.messages.append((chat_id, text))
 
     async def reply_to_message(self, chat_id: int, message_id: int, text: str) -> None:

@@ -12,8 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class I18nTranslator(Translator):
-    def __init__(self, fallback_language: Language):
+    def __init__(self, fallback_language: Language, app_name: str):
         self.fallback_language = fallback_language
+        self.app_name = app_name
         if str(TRANSLATIONS_PATH) not in i18n.load_path:
             i18n.load_path.append(str(TRANSLATIONS_PATH))
         i18n.set("file_format", "yaml")
@@ -25,6 +26,7 @@ class I18nTranslator(Translator):
     ) -> str:
         locale = language or self.fallback_language
         i18n.set("locale", locale.name.lower())
+        params["app_name"] = self.app_name
         return i18n.t(key.value, **params)
 
     def translate_response(self, response: IntegrationResponse, **params) -> str:

@@ -1,26 +1,44 @@
 from collections.abc import Callable
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardButton, ReplyParameters
+from aiogram.types import InlineKeyboardButton, ReplyParameters, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from telegramify_markdown import markdownify
 
 from common.application.protocols.messenger_adapter import MessengerAdapter
 from common.application.protocols.translator import Translator
+from common.config.schemas.app_config import AppConfig
+from common.contracts.app_redirect import AppRedirect
 from common.contracts.choice.choice_prompt import ChoicePrompt
 from telegram.src.markup.schemas.choice_callback_data import ChoiceCallbackData
 
 
 class TelegramMessengerAdapter(MessengerAdapter):
-    def __init__(self, bot: Bot, translator: Translator):
+    def __init__(self, bot: Bot, translator: Translator, app_config: AppConfig):
         self.bot = bot
         self.translator = translator
+        self.app_config = app_config
 
     def _render(self, text: str) -> str:
         return markdownify(text)
 
-    async def send_message(self, chat_id: int, text: str) -> None:
-        await self.bot.send_message(chat_id, self._render(text))
+    async def send_message(
+        self, chat_id: int, text: str, app_redirect: AppRedirect | None = None
+    ) -> None:
+        reply_markup = None
+        if app_redirect is not None:
+            builder = InlineKeyboardBuilder()
+            builder.button(
+                text=app_redirect.display_text,
+                web_app=WebAppInfo(
+                    url=str(app_redirect.to_url(self.app_config.public_url))
+                ),
+            )
+            reply_markup = builder.as_markup()
+
+        await self.bot.send_message(
+            chat_id, self._render(text), reply_markup=reply_markup
+        )
 
     async def reply_to_message(self, chat_id: int, message_id: int, text: str) -> None:
         await self.bot.send_message(
