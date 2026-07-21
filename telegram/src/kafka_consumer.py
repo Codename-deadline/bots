@@ -47,7 +47,7 @@ def build_telegram_consumer(
             event.chat_id,
             text,
             AppRedirect(
-                path=f"/deadline?=ddlId={event.deadline.id}",
+                path=f"/deadline?ddlId={event.deadline.id}",
                 display_text=translator.translate(
                     TranslationKey.NOTIFICATIONS_GO_TO_DEADLINE, event.language
                 ),

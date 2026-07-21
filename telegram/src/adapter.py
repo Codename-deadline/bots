@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardButton, ReplyParameters, WebAppInfo
+from aiogram.types import InlineKeyboardButton, ReplyParameters
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from telegramify_markdown import markdownify
 
@@ -30,9 +30,7 @@ class TelegramMessengerAdapter(MessengerAdapter):
             builder = InlineKeyboardBuilder()
             builder.button(
                 text=app_redirect.display_text,
-                web_app=WebAppInfo(
-                    url=str(app_redirect.to_url(self.app_config.public_url))
-                ),
+                url=str(app_redirect.to_url(self.app_config.public_url)),
             )
             reply_markup = builder.as_markup()
 
