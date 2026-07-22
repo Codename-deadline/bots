@@ -95,6 +95,7 @@ en:
     one_month: "1 month"
   notifications:
     deadline_expiry: "# %title\n\nOrganization: %organization\nThread: %thread\n\nDue: %due\nLess than **%time_remaining** remaining"
+    deadline_overdue: "# %title\n\nOrganization: %organization\nThread: %thread\n\nDue: %due\n**Deadline is now overdue.**\n_Better late than never._"
     go_to_deadline: "Go to deadline"
   prompt:
     accept: "Yes"

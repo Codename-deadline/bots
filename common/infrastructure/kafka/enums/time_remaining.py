@@ -7,3 +7,4 @@ class TimeRemaining(IntEnum):
     ONE_DAY = 2
     ONE_WEEK = 3
     ONE_MONTH = 4
+    NO_TIME = 5

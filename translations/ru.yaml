@@ -95,6 +95,7 @@ ru:
     one_month: "1 месяца"
   notifications:
     deadline_expiry: "# %title\n\nОрганизация: %organization\nРаздел: %thread\n\nКрайний срок: %due\nОсталось менее **%time_remaining**"
+    deadline_overdue: "# %title\n\nОрганизация: %organization\nРаздел: %thread\n\nКрайний срок: %due\n**Срок выполнения истёк.**\n_Лучше поздно, чем никогда._"
     go_to_deadline: "Перейти к дедлайну"
   prompt:
     accept: "Да"

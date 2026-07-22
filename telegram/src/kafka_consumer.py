@@ -6,6 +6,7 @@ from common.config.schemas.kafka_config import KafkaConfig
 from common.contracts.app_redirect import AppRedirect
 from common.contracts.interaction import VerificationInteraction
 from common.infrastructure.i18n.mappings import TIME_REMAINING_TRANSLATION_KEYS
+from common.infrastructure.kafka.enums.time_remaining import TimeRemaining
 from common.infrastructure.kafka.integration_events import (
     IntegrationEventHandlers,
     build_integration_consumer,
@@ -31,17 +32,23 @@ def build_telegram_consumer(
         )
 
     async def handle_notification(event: NotificationEvent) -> None:
-        time_remaining = translator.translate(
-            TIME_REMAINING_TRANSLATION_KEYS[event.timeRemaining], event.language
-        )
+        translation_key = TranslationKey.NOTIFICATIONS_DEADLINE_OVERDUE
+        params = {
+            "title": event.deadline.title,
+            "organization": event.organization.title,
+            "thread": event.thread.title,
+            "due": f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
+        }
+        if event.timeRemaining is not TimeRemaining.NO_TIME:
+            translation_key = TranslationKey.NOTIFICATIONS_DEADLINE_EXPIRY
+            params["time_remaining"] = translator.translate(
+                TIME_REMAINING_TRANSLATION_KEYS[event.timeRemaining], event.language
+            )
+
         text = translator.translate(
-            TranslationKey.NOTIFICATIONS_DEADLINE_EXPIRY,
+            translation_key,
             event.language,
-            title=event.deadline.title,
-            organization=event.organization.title,
-            thread=event.thread.title,
-            due=f"{event.deadline.due.strftime('%H:%M %d.%m.%Y')} UTC+0",
-            time_remaining=time_remaining,
+            **params,
         )
         await messenger.send_message(
             event.chat_id,
