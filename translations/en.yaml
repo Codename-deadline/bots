@@ -105,7 +105,7 @@ en:
     reject: "No"
   auth:
     otp:
-      text: "%code - account login code\n**Do not disclose it to third parties**"
+      text: "`%code` - account login code\n**Do not disclose it to third parties**"
   account_linkage:
     text: "Someone issued an account linkage request. If it was not you decline the request. Otherwise accept to proceed"
     success: "Account successfully linked"
@@ -118,7 +118,8 @@ en:
   chat_info_update:
     success: "Chat data updated"
   user_id:
-    success: "User id: `%user_id`"
+    success: "Telegram ID: `%user_id`"
+  start_response: "Your telegram ID is `%user_id`\nEnter it when registering an account"
   sub:
     organization:
       success: "Chat is now subscribed to organization's deadlines"

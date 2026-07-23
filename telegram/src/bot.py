@@ -12,6 +12,7 @@ from common.infrastructure.i18n.translator import I18nTranslator
 from telegram.src.adapter import TelegramMessengerAdapter
 from telegram.src.kafka_consumer import build_telegram_consumer
 from telegram.src.services.help_service import HelpService
+from telegram.src.services.util_service import UtilService
 
 dp: Dispatcher = Dispatcher()
 bot: Bot = Bot(
@@ -34,6 +35,7 @@ verification_service = VerificationService(
     telegram_adapter, integration_gateway, translator
 )
 help_service = HelpService(bot, translator)
+util_service = UtilService(translator)
 
 global_consumer = build_telegram_consumer(
     config.kafka,

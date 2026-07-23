@@ -60,6 +60,7 @@ class TranslationKey(StrEnum):
     DEREGISTER_CHAT_NOT_REGISTERED = "deregister_chat.not_registered"
     CHAT_INFO_UPDATE_SUCCESS = "chat_info_update.success"
     USER_ID_SUCCESS = "user_id.success"
+    START_RESPONSE = "start_response"
 
     SUB_ORGANIZATION_SUCCESS = "sub.organization.success"
     SUB_ORGANIZATION_ALREADY_SUBSCRIBED = "sub.organization.already_subscribed"

@@ -10,6 +10,7 @@ from telegram.src.bot import (
     integration_gateway,
     subscription_service,
     translator,
+    util_service,
     verification_service,
 )
 
@@ -47,6 +48,7 @@ async def main() -> None:
         subscription_service=subscription_service,
         verification_service=verification_service,
         help_service=help_service,
+        util_service=util_service,
         translator=translator,
     )
     dp.message.middleware(middleware)
