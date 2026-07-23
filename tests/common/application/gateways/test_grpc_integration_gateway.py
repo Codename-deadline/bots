@@ -2,7 +2,11 @@ from unittest.mock import Mock, patch
 
 from common.application.enums import Language, Messenger
 from common.application.gateways.grpc_integration_gateway import GrpcIntegrationGateway
-from common.application.protocols.integration_gateway import ScopeType
+from common.application.protocols.integration_gateway import (
+    ChatPreferences,
+    ChatPreferenceUpdates,
+    ScopeType,
+)
 from common.config.schemas.grpc_config import GrpcConfig
 from common.config.schemas.tls_config import TlsConfig
 from common.infrastructure.grpc.generated import integration_pb2
@@ -45,6 +49,10 @@ class RecordingIntegrationService:
 
     async def DeregisterChat(self, request, **kwargs):
         self.calls.append(("DeregisterChat", request))
+        return self._response()
+
+    async def UpdateChatInfo(self, request, **kwargs):
+        self.calls.append(("UpdateChatInfo", request))
         return self._response()
 
     def _response(self):
@@ -178,11 +186,13 @@ async def test_link_messenger_account_sends_approving_account_identity():
     assert request.messenger == integration_pb2.TELEGRAM
 
 
-async def test_register_chat_sends_admin_flag_and_language():
+async def test_register_chat_sends_admin_flag_language_and_time_zone():
     service = RecordingIntegrationService()
     gateway = _gateway(service)
 
-    await gateway.register_chat(10, 20, "Chat", Language.RU, True)
+    await gateway.register_chat(
+        10, 20, "Chat", ChatPreferences(Language.RU, "Europe/Moscow"), True
+    )
 
     name, request = service.calls[0]
     assert name == "RegisterChat"
@@ -191,7 +201,36 @@ async def test_register_chat_sends_admin_flag_and_language():
     assert request.messenger_chat_id == 20
     assert request.chat_title == "Chat"
     assert request.language == "RU"
+    assert request.time_zone == "Europe/Moscow"
     assert request.issuer_has_messenger_chat_admin_rights is True
+
+
+async def test_update_chat_info_preserves_optional_field_presence():
+    service = RecordingIntegrationService()
+    gateway = _gateway(service)
+
+    await gateway.update_chat_info(
+        10, 20, True, "Chat", ChatPreferenceUpdates(time_zone="Asia/Kathmandu")
+    )
+
+    name, request = service.calls[0]
+    assert name == "UpdateChatInfo"
+    assert request.HasField("title")
+    assert request.title == "Chat"
+    assert not request.HasField("language")
+    assert request.HasField("time_zone")
+    assert request.time_zone == "Asia/Kathmandu"
+
+
+async def test_update_chat_info_omits_both_unset_optional_preferences():
+    service = RecordingIntegrationService()
+    gateway = _gateway(service)
+
+    await gateway.update_chat_info(10, 20, True, "Chat", ChatPreferenceUpdates())
+
+    _, request = service.calls[0]
+    assert not request.HasField("language")
+    assert not request.HasField("time_zone")
 
 
 async def test_deregister_chat_sends_issuer_and_admin_flag():

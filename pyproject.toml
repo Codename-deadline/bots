@@ -11,6 +11,7 @@ dependencies = [
     "python-i18n==0.3.9",
     "pyyaml==6.0.3",
     "telegramify-markdown==1.2.0",
+    "tzdata>=2026.1,<2027.0",
 ]
 
 [project.optional-dependencies]

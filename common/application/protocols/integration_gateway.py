@@ -19,6 +19,18 @@ class ScopeType(StrEnum):
     DEADLINE = "ddl"
 
 
+@dataclass(frozen=True)
+class ChatPreferences:
+    language: Language
+    time_zone: str
+
+
+@dataclass(frozen=True)
+class ChatPreferenceUpdates:
+    language: Language | None = None
+    time_zone: str | None = None
+
+
 class IntegrationGateway(Protocol):
     async def link_messenger_account(
         self, request_id: str, is_accepted: bool, account_id: int
@@ -29,7 +41,7 @@ class IntegrationGateway(Protocol):
         account_id: int,
         chat_id: int,
         chat_title: str,
-        language: Language,
+        preferences: ChatPreferences,
         is_admin: bool,
     ) -> IntegrationResponse: ...
     async def deregister_chat(
@@ -45,7 +57,7 @@ class IntegrationGateway(Protocol):
         chat_id: int,
         is_admin: bool,
         chat_title: str,
-        language: Language | None,
+        preferences: ChatPreferenceUpdates,
     ) -> IntegrationResponse: ...
 
     async def subscribe_to_scope(

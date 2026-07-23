@@ -46,10 +46,23 @@ class FakeIntegrationGateway:
         return self.response
 
     async def register_chat(
-        self, account_id: int, chat_id: int, chat_title: str, language, is_admin: bool
+        self,
+        account_id: int,
+        chat_id: int,
+        chat_title: str,
+        preferences,
+        is_admin: bool,
     ):
         self.calls.append(
-            ("register_chat", account_id, chat_id, chat_title, language, is_admin)
+            (
+                "register_chat",
+                account_id,
+                chat_id,
+                chat_title,
+                preferences.language,
+                preferences.time_zone,
+                is_admin,
+            )
         )
         return self.response
 
@@ -58,10 +71,23 @@ class FakeIntegrationGateway:
         return self.response
 
     async def update_chat_info(
-        self, account_id: int, chat_id: int, is_admin: bool, chat_title: str, language
+        self,
+        account_id: int,
+        chat_id: int,
+        is_admin: bool,
+        chat_title: str,
+        preferences,
     ):
         self.calls.append(
-            ("update_chat_info", account_id, chat_id, is_admin, chat_title, language)
+            (
+                "update_chat_info",
+                account_id,
+                chat_id,
+                is_admin,
+                chat_title,
+                preferences.language,
+                preferences.time_zone,
+            )
         )
         return self.response
 

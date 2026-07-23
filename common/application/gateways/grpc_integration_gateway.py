@@ -7,6 +7,8 @@ from grpc.aio import Channel
 
 from common.application.enums import Language, Messenger
 from common.application.protocols.integration_gateway import (
+    ChatPreferences,
+    ChatPreferenceUpdates,
     IntegrationGateway,
     IntegrationResponse,
     ScopeType,
@@ -232,7 +234,7 @@ class GrpcIntegrationGateway(IntegrationGateway):
         account_id: int,
         chat_id: int,
         chat_title: str,
-        language: Language,
+        preferences: ChatPreferences,
         is_admin: bool,
     ):
         request = integration_pb2.RegisterChatRequest(
@@ -241,7 +243,8 @@ class GrpcIntegrationGateway(IntegrationGateway):
             messenger=self._messenger,
             messenger_chat_id=chat_id,
             chat_title=chat_title,
-            language=language.value,
+            language=preferences.language.value,
+            time_zone=preferences.time_zone,
             issuer_has_messenger_chat_admin_rights=is_admin,
         )
         return await self.__call_with_defaults(
@@ -270,16 +273,19 @@ class GrpcIntegrationGateway(IntegrationGateway):
         chat_id: int,
         is_admin: bool,
         chat_title: str,
-        language: Language | None,
+        preferences: ChatPreferenceUpdates,
     ):
         request = integration_pb2.UpdateChatInfoRequest(
             issuer_messenger_account_id=account_id,
             messenger=self._messenger,
             messenger_chat_id=chat_id,
-            language=language,
             title=chat_title,
             issuer_has_messenger_chat_admin_rights=is_admin,
         )
+        if preferences.language is not None:
+            request.language = getattr(integration_pb2, preferences.language.name)
+        if preferences.time_zone is not None:
+            request.time_zone = preferences.time_zone
         return await self.__call_with_defaults(
             self._integration_service.UpdateChatInfo, request
         )

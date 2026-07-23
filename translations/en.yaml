@@ -48,13 +48,14 @@ en:
       title: "Chat"
       text: |
         ## Commands:
-        1) `/reg_chat <LANGUAGE:String>` - Registers the chat and sets the preferred bot language
-        2) `/update_chat_info <optional:LANGUAGE:String>` - updates the chat's title to the current one and overrides the preffered language
+        1) `/reg_chat lang=<LANGUAGE> timezone=<IANA_TIME_ZONE>` - registers the chat and sets its preferred bot language and time zone (argument order does not matter)
+        2) `/update_chat_info [lang=<LANGUAGE>] [timezone=<IANA_TIME_ZONE>]` - updates the current chat title and optionally its preferred language and/or time zone
         3) `/dereg_chat` - deregisters the chat. *All the data will be deleted, you will stop receiving notification*
 
         Learn how to start receiving notification ba navigation to _Subscriptions_ chapter
         > The following languages are currently available:
         > `RU`, `EN`
+        > Time zone example: `Europe/London`
     verification:
       title: "Verification"
       text: |
@@ -71,11 +72,13 @@ en:
     unsupported_language: "Unsupported language provided"
     chat_not_allowed: "Command cannot be used in this chat"
     admins_only_cmd: "This command can only be used by admins"
+    invalid_time_zone: "Invalid IANA time zone. Example: Europe/London"
   errors:
     error: "[ERROR]"
     request_not_found: "Request not found. Try reissuing the request"
     user_not_found: "User not found. Register in the app first"
     chat_not_found: "Chat not found. Make sure to register chat first using /reg_chat.See /help for more details"
+    invalid_time_zone: "Invalid IANA time zone. Example: Europe/London"
     organization_not_found: "Organization not found"
     thread_not_found: "Thread not found"
     deadline_not_found: "Deadline not found"

@@ -22,4 +22,5 @@ class NotificationEvent(BaseKafkaEvent):
     organization: RawEntityPayload
     thread: RawEntityPayload
     deadline: DeadlinePayload
+    time_zone: str = "Etc/UTC"
     timeRemaining: TimeRemaining

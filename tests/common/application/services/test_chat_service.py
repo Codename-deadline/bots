@@ -27,11 +27,17 @@ async def test_register_chat_calls_api_and_replies():
     messenger = FakeMessenger()
     api = FakeIntegrationGateway()
     service = ChatService(messenger, api, FakeTranslator())
-    command = IncomingCommand(_message(), CommandName.REGISTER_CHAT, ("en",))
+    command = IncomingCommand(
+        _message(),
+        CommandName.REGISTER_CHAT,
+        ("timezone=Europe/Moscow", "LANG=en"),
+    )
 
     await service.register_chat(command)
 
-    assert api.calls == [("register_chat", 20, 30, "Chat", Language.EN, True)]
+    assert api.calls == [
+        ("register_chat", 20, 30, "Chat", Language.EN, "Europe/Moscow", True)
+    ]
     assert messenger.replies == [(10 + 20, 10, "EN:register_chat.success")]
 
 
@@ -39,7 +45,9 @@ async def test_register_chat_replies_validation_error_without_api_call():
     messenger = FakeMessenger()
     api = FakeIntegrationGateway()
     service = ChatService(messenger, api, FakeTranslator())
-    command = IncomingCommand(_message(), CommandName.REGISTER_CHAT, ("de",))
+    command = IncomingCommand(
+        _message(), CommandName.REGISTER_CHAT, ("lang=de", "timezone=Etc/UTC")
+    )
 
     await service.register_chat(command)
 
@@ -61,7 +69,22 @@ async def test_update_chat_info_allows_missing_language():
 
     await service.update_chat_info(command)
 
-    assert api.calls == [("update_chat_info", 20, 30, True, "Chat", None)]
+    assert api.calls == [("update_chat_info", 20, 30, True, "Chat", None, None)]
+
+
+async def test_update_chat_info_passes_only_present_named_argument():
+    messenger = FakeMessenger()
+    api = FakeIntegrationGateway()
+    service = ChatService(messenger, api, FakeTranslator())
+    command = IncomingCommand(
+        _message(), CommandName.UPDATE_CHAT_INFO, ("timezone=Asia/Kathmandu",)
+    )
+
+    await service.update_chat_info(command)
+
+    assert api.calls == [
+        ("update_chat_info", 20, 30, True, "Chat", None, "Asia/Kathmandu")
+    ]
 
 
 async def test_deregister_chat_calls_api():

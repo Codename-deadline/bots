@@ -7,6 +7,7 @@ class TranslationKey(StrEnum):
     VALIDATION_UNSUPPORTED_LANGUAGE = "validation.unsupported_language"
     VALIDATION_CHAT_NOT_ALLOWED = "validation.chat_not_allowed"
     VALIDATION_ADMINS_ONLY_CMD = "validation.admins_only_cmd"
+    VALIDATION_INVALID_TIME_ZONE = "validation.invalid_time_zone"
 
     ERRORS_ERROR = "errors.error"
     ERRORS_REQUEST_NOT_FOUND = "errors.request_not_found"
@@ -15,6 +16,7 @@ class TranslationKey(StrEnum):
     ERRORS_CHAT_MANAGEMENT_DENIED = "errors.chat_management_denied"
     ERRORS_CHAT_ALREADY_REGISTERED = "errors.chat_already_registered"
     ERRORS_CHAT_NOT_FOUND = "errors.chat_not_found"
+    ERRORS_INVALID_TIME_ZONE = "errors.invalid_time_zone"
     ERRORS_ORGANIZATION_NOT_FOUND = "errors.organization_not_found"
     ERRORS_ORGANIZATION_ACCESS_DENIED = "errors.organization_access_denied"
     ERRORS_THREAD_NOT_FOUND = "errors.thread_not_found"
